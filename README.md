@@ -1,128 +1,130 @@
 # local-to-echarts
 
-**本地优先的数据看图工具 —— 拖入 CSV / Excel，点几下配置出图，导出 PNG / SVG / PDF。数据不出本机。**
+English | [简体中文](README.zh-CN.md)
 
-> 当前状态：**v0.1 MVP 可运行**。浏览器预览和桌面应用都基于同一套 Vue 代码，桌面壳用 Electron，全程不需要 Rust。
+**A local-first charting tool: drop in a CSV / Excel file, configure a chart in a few clicks, export PNG / SVG / PDF. Your data never leaves the machine.**
 
-![界面预览](docs/screenshot.png)
+> Status: **v0.1 MVP is runnable**. Browser preview and desktop app share one Vue codebase; the desktop shell is Electron, so no Rust is involved anywhere.
 
-## 为什么做这个
+![Screenshot](docs/screenshot.png)
 
-市面上不缺数据可视化工具，但常见组合总有点别扭：RAWGraphs / DataEase / GoView 是 Web 应用，用起来要开浏览器，不在本地文件流里；MadY / DataAnalyzerApp 是 Python/Qt 栈，界面观感老旧；Data Formulator 依赖 LLM API，要配 key。
+## Why
 
-这个项目的定位是把缺口补上：**一个断网可用、拖进来就会出图的现代桌面小工具**，并且整套界面用 Vue 3 + ECharts 写，改起来没有门槛。桌面壳选 Electron——业务逻辑 100% 是前端 JS，主进程只有几行创建窗口的代码，不需要碰 Rust。
+Data visualization tools are not in short supply, but the usual combinations have rough edges: RAWGraphs, DataEase and GoView are web apps that live in a browser instead of your local file workflow; MadY and DataAnalyzerApp use a Python/Qt stack with a dated UI; Data Formulator depends on an LLM API key.
 
-## 功能
+This project fills the gap: **an offline-capable, modern desktop tool that produces a chart as soon as you drop a file in**. The entire UI is Vue 3 + ECharts, so it is easy to modify. The desktop shell is Electron — all product logic is front-end JavaScript, and the main process is only a few lines that create a window. You never have to touch Rust.
 
-- **数据导入**：拖入或选择 `.csv` / `.tsv` / `.txt` / `.xlsx` / `.xls`；自动识别分隔符、BOM、引号转义和数值列，**支持合并单元格与两级表头**（自动拼成「中长期合同/省内净合同电量」这样的唯一列名）
-- **表格预览**：列名自动去重，数值右对齐，超过 100 行只展示前 100 行
-- **三种图表**：柱状图、折线图、饼图；X 轴 / 分类字段支持**多字段拼接**（如「月份 / 地区」→ `1月 / 华东`，分隔符可自定义），数值字段可多选，聚合方式 6 种（求和 / 平均值 / 计数 / 最大 / 最小 / 首条值）
-- **按字段堆叠**：把某字段的唯一值拆成系列，X 轴保持另一字段——例如 X 轴「时段」+ 堆叠「结算日期」，同一时段刻度上就堆叠出 06-01 与 06-02 的数据；参与取值默认前 4 项，可逐个勾选或一键「全选 / 恢复默认」，列表不套内部滚动条（由侧栏统一滚动）；可切换累加堆叠/并排显示
-- **行剔除**：在数据预览表格里勾选掉不需要的行，剔除后不参与图表和导出，但仍划线显示在表格中，可随时恢复
-- **可视化配置**：标题、配色主题、显示分类数；配置项按「基础 / 堆叠 / 外观与聚合」分组折叠，默认只展开基础项
-- **三种视图模式**：顶部切换「图表 / 分屏 / 数据」——图表独占一屏、表格独占一屏，或上下分屏同时查看；页面本身不滚动，只有侧栏和图表/表格区域内部滚动，图表不会被滚走
-- **导出**：PNG（2 倍像素）、SVG（矢量）、PDF，以及原始数据 CSV / 完整配置 JSON
-- **零上传**：没有后端接口、没有埋点、没有网络请求
+## Features
 
-## 快速开始
+- **Data import**: drag & drop or pick `.csv` / `.tsv` / `.txt` / `.xlsx` / `.xls`; auto-detects delimiters, BOM, quoted fields and numeric columns, and **supports merged cells and two-level Excel headers** (joined into unique names such as `Medium & Long-term Contract / Provincial Net Contract Energy`)
+- **Table preview**: deduplicated column names, right-aligned numbers, first 100 rows shown
+- **Three chart types**: bar, line and pie; the X / category axis supports **joining multiple fields** (e.g. `Month / Region` → `Jan / East`, with a custom separator), multiple value fields, and six aggregation modes (sum / average / count / max / min / first value)
+- **Stack by field**: split the unique values of one field into series while the X axis stays on another — e.g. X = `Time Slot`, stack = `Settlement Date` puts multiple dates on the same tick. Participating values default to the first four and can be toggled individually or with **Select all / Reset to default**; the list has no nested scrollbar (the sidebar scrolls once), and cumulative stacking can be switched to side-by-side
+- **Row exclusion**: untick unwanted rows in the preview table; excluded rows are skipped in charts and exports but remain visible with a strikethrough, so they can be restored at any time
+- **Visual options**: title, color palette and category limit; settings are grouped into collapsible **Basic / Stack / Appearance & Aggregation** sections, with only Basic expanded by default
+- **Three view modes**: switch between **Chart / Split / Data** from the toolbar — chart-only, table-only, or both stacked. The page itself never scrolls; only the sidebar and the active panes scroll, so the chart cannot be scrolled away
+- **Export**: PNG (2× pixel density), SVG (vector), PDF, plus raw data as CSV and the full configuration as JSON
+- **Zero uploads**: no backend endpoints, no telemetry, no network calls at runtime
 
-### 方式一：浏览器预览（最快）
+## Quick start
 
-需要 Node.js 20.19+ 或 22.12+（Vite 8 的最低要求；开发时用 Node 22.22 验证）：
+### Browser preview (fastest)
+
+Requires Node.js 20.19+ or 22.12+ (Vite 8 minimum; verified on Node 22.22):
 
 ```bash
 npm install
 npm run dev
 ```
 
-打开 <http://localhost:1420>。首次进入会自动加载示例数据，直接就能看到图表。
+Open <http://localhost:1420>. Sample data loads automatically, so a chart is visible immediately.
 
-> `xlsx` 依赖指向 [SheetJS 官方 CDN 的 0.20.3](https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz)，而不是 npm registry 上停更在 0.18.5 的同名包——后者有已知安全问题，这也是 SheetJS 官方推荐的安装方式。
+> The `xlsx` dependency points to [SheetJS official CDN 0.20.3](https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz), not the same-name npm registry package stuck at 0.18.5 (which has known security issues). This is the installation method recommended by SheetJS.
 
-构建静态文件：
+Build static files:
 
 ```bash
-npm run build
+npm run build   # output in dist/
 ```
 
-### 方式二：Electron 桌面应用
+### Electron desktop app
 
-不需要 Rust、WebView2 或 MSVC。`npm install` 时会下载 Electron 二进制；若网络受限，可设置镜像后重装。
+No Rust, WebView2 or MSVC needed. `npm install` downloads the Electron binary; if the network is restricted, set a mirror before reinstalling.
 
 ```bash
-# 开发模式：一条命令同时启动 Vite（1422 端口）和桌面窗口
+# Dev mode: one command starts Vite (port 1422) and the desktop window together
 npm run dev:electron
 
-# 单独打开桌面窗口（需先另开终端跑 npm run dev，窗口会加载 1420）
+# Open the desktop window alone (run `npm run dev` in another terminal first; the window loads port 1420)
 npm run electron
 
-# 打包：产物在 release/ 目录（Windows 为 NSIS 安装包）
+# Package the app (NSIS installer on Windows); output in release/
 npm run dist
 ```
 
-`dev:electron` 用的是 1422 端口，和浏览器预览的 1420 不冲突，可以同时跑。
+`dev:electron` uses port 1422 so it never conflicts with the browser preview on 1420 — both can run at the same time.
 
-## 使用说明
+## Usage
 
-1. 打开应用后，直接拖入数据文件，或点击「试用示例数据」
-2. 选图表类型、分类字段（可多选拼接）和一个或多个数值字段；需要时在数据预览表格里剔除行
-3. 同一分类有多行时，选择聚合方式；分类太多可调「最多显示分类数」
-4. 用内容区顶部的「图表 / 分屏 / 数据」切换视图：想专心看趋势就用图表模式，逐行核对用数据模式，平时默认分屏
-5. 图表右上角按钮导出 PNG / SVG / PDF；顶部可把当前数据和配置一起导出为 JSON，方便复现
+1. Open the app, then drag in a data file or click **Try sample data**.
+2. Pick a chart type, one or more category fields (joined together), and one or more value fields; exclude unwanted rows in the preview table if needed.
+3. When a category has multiple rows, choose an aggregation mode; if there are too many categories, lower **Max categories**.
+4. Use **Chart / Split / Data** in the content toolbar to switch views: Chart for trends, Data for row-by-row checks, Split (the default) for both.
+5. Export PNG / SVG / PDF from the buttons at the top-right of the chart; the toolbar can also export the current data and configuration together as JSON for reproducibility.
 
-**数值列判定规则**：非空值中至少 80% 能解析为数字，即视为数值列；解析时会去掉千分位逗号、空格、`%`、`¥`、`$` 等符号。
+**Numeric column rule**: a column is treated as numeric when at least 80% of its non-empty values parse as numbers. Thousands separators, spaces, `%`, `¥`, `$` and similar symbols are stripped while parsing.
 
-**按日期堆叠示例**（电力清分账单场景）：导入账单 → X 轴字段只选「时段」→ 数值字段选「实际用电量」→ 按字段堆叠选「结算日期」→ 在参与堆叠的取值里勾选 06-01 和 06-02。这样一个时段刻度上就会堆叠两根日期柱；若数值字段选多个，会按字段分组堆叠（电量与电费不会混在一起）。
+**Stacking by date example** (electricity settlement bill): import the bill → select only `Time Slot` as the X field → select `Actual Energy Consumption` as the value field → choose `Settlement Date` as the stack field → tick the two dates (e.g. 06-01 and 06-02) among the participating values. Each time-slot tick now shows two stacked bars for the two dates. If you select multiple value fields, series are grouped by field, so energy and cost never get mixed together.
 
-## 数据隐私
+## Privacy
 
-所有解析、聚合和渲染都发生在渲染进程内。项目没有后端服务，`electron/main.cjs` 关掉了 `nodeIntegration`、开启 `contextIsolation`，渲染页拿不到 Node API；外链一律交给系统浏览器。唯一的联网场景是你首次执行 `npm install` 下载依赖。
+All parsing, aggregation and rendering happen inside the renderer process. There is no backend; `electron/main.cjs` disables `nodeIntegration` and enables `contextIsolation`, so the renderer has no access to Node APIs, and external links are handed to the system browser. The only network activity is `npm install` when you fetch development dependencies.
 
-## 技术栈与架构
+## Tech stack and architecture
 
-| 层 | 技术 | 说明 |
+| Layer | Stack | Notes |
 |---|---|---|
-| 界面 | Vue 3.5 + Vite 8 | 组合式 API，无 UI 框架依赖 |
-| 图表 | ECharts 6 | 配置在 `src/utils/chart.js` 统一生成 |
-| Excel 解析 | SheetJS 0.20.3（官方 CDN） | 纯前端读取首个 sheet |
-| PDF 导出 | jsPDF 4 | 动态导入，首屏不加载 |
-| 桌面壳 | Electron 45 | 主进程 `electron/main.cjs` 仅创建窗口，业务逻辑 100% 在渲染进程 |
+| UI | Vue 3.5 + Vite 8 | Composition API, no UI framework dependency |
+| Charts | ECharts 6 | Options built centrally in `src/utils/chart.js` |
+| Excel parsing | SheetJS 0.20.3 (official CDN) | Reads the first worksheet in-browser |
+| PDF export | jsPDF 4 | Dynamically imported, not loaded on first paint |
+| Desktop shell | Electron 45 | Main process `electron/main.cjs` only creates the window; 100% of product logic is in the renderer |
 
-Electron 的主进程负责窗口和系统集成，业务代码不需要感知它。以后要加「保存到指定路径」「原生文件对话框」等能力，直接用 Electron 的 `dialog` / `ipcMain` API（同为 Node JS），或继续用浏览器下载。
+The Electron main process owns windows and OS integration; business code never needs to know about it. Native features such as "save to a chosen path" or a system file dialog can be added with Electron's `dialog` / `ipcMain` APIs (still Node.js), or you can keep using browser downloads.
 
 ```text
 src/
-  App.vue                    状态编排：数据集、图表配置、导出
+  App.vue                    State orchestration: dataset, chart config, exports
   components/
-    FileDrop.vue             拖拽 / 选择文件 / 示例数据
-    ChartOptions.vue         图表配置表单
-    ChartPanel.vue           ECharts 实例与导出按钮
-    DataTable.vue            数据表格预览
+    FileDrop.vue             Drag & drop / file picker / sample data
+    ChartOptions.vue         Chart configuration form
+    ChartPanel.vue           ECharts instance and export buttons
+    DataTable.vue            Data table preview
   utils/
-    parse.js                 CSV/TSV/Excel 解析与类型推断
-    chart.js                 ECharts option 生成、聚合逻辑
-    download.js              PNG/SVG/PDF/CSV/JSON 导出
-    demo.js                  内置示例数据
-electron/main.cjs            Electron 主进程：窗口、菜单、外链处理
-scripts/dev-electron.mjs     一条命令启动 Vite + Electron
-examples/sample.csv          示例数据（与内置一致）
+    parse.js                 CSV/TSV/Excel parsing and type inference
+    chart.js                 ECharts option generation and aggregation
+    download.js              PNG/SVG/PDF/CSV/JSON export
+    demo.js                  Built-in sample data
+electron/main.cjs            Electron main process: window, menu, external links
+scripts/dev-electron.mjs     One command to start Vite + Electron
+examples/sample.csv          Sample data (same as the built-in set)
 ```
 
-## 路线图
+## Roadmap
 
-- [x] CSV/TSV/Excel 导入与表格预览
-- [x] 柱状/折线/饼图 + 字段映射 + 聚合
-- [x] PNG / SVG / PDF / CSV / JSON 导出
-- [ ] 原生文件保存对话框（Electron dialog + ipcMain）
-- [ ] 图表配置另存为模板、配置导入
-- [ ] 分组字段（多系列按列拆分）
-- [ ] 深色主题
-- [ ] ECharts 按需引入，减小安装包体积
-- [ ] macOS / Linux 打包实测
+- [x] CSV/TSV/Excel import and table preview
+- [x] Bar/line/pie charts, field mapping and aggregation
+- [x] PNG / SVG / PDF / CSV / JSON export
+- [ ] Native save dialog (Electron dialog + ipcMain)
+- [ ] Save/load chart config presets
+- [ ] Group-by series (split series by a column)
+- [ ] Dark theme
+- [ ] Tree-shake ECharts to shrink the installer
+- [ ] macOS / Linux packaging checks
 
-## 参与贡献
+## Contributing
 
-Fork 本仓库 → 新建 `feat/xxx` 分支 → 提交代码 → 新建 Pull Request。修 bug 或加图表类型都欢迎，改动前建议先跑一次 `npm run build` 确认能构建。
+Fork the repository → create a `feat/xxx` branch → commit → open a Pull Request. Bug fixes and new chart types are both welcome; please run `npm run build` once before submitting to confirm the build still passes.
 
 ## License
 
