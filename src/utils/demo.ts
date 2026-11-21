@@ -1,4 +1,5 @@
-import { parseDelimited } from './parse.js'
+import { parseDelimited } from './parse'
+import type { Dataset } from '../types'
 
 const DEMO_CSV = `月份,地区,销售额,订单数,利润率
 1月,华东,128.5,342,0.18
@@ -14,7 +15,7 @@ const DEMO_CSV = `月份,地区,销售额,订单数,利润率
 11月,华东,258.9,671,0.27
 12月,华东,276.4,713,0.28`
 
-export function loadDemo() {
+export function loadDemo(): Dataset {
   return {
     ...parseDelimited(DEMO_CSV),
     name: '示例数据 · 月度销售.csv',

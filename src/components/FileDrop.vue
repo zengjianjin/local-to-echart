@@ -1,22 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
-defineProps({ busy: { type: Boolean, default: false } })
-const emit = defineEmits(['file', 'demo'])
+withDefaults(defineProps<{ busy?: boolean }>(), { busy: false })
+const emit = defineEmits<{
+  file: [file: File]
+  demo: []
+}>()
 
 const dragging = ref(false)
-const fileInput = ref(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 
-function onDrop(event) {
+function onDrop(event: DragEvent) {
   dragging.value = false
   const file = event.dataTransfer?.files?.[0]
   if (file) emit('file', file)
 }
 
-function onChange(event) {
-  const file = event.target.files?.[0]
+function onChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
   if (file) emit('file', file)
-  event.target.value = ''
+  input.value = ''
 }
 </script>
 

@@ -1,20 +1,21 @@
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { parseFile } from './utils/parse.js'
-import { loadDemo } from './utils/demo.js'
-import { buildOption } from './utils/chart.js'
-import { exportCSV, exportJSON, safeFilename } from './utils/download.js'
+import { parseFile } from './utils/parse'
+import { loadDemo } from './utils/demo'
+import { buildOption } from './utils/chart'
+import { exportCSV, exportJSON, safeFilename } from './utils/download'
 import FileDrop from './components/FileDrop.vue'
 import ChartOptions from './components/ChartOptions.vue'
 import ChartPanel from './components/ChartPanel.vue'
 import DataTable from './components/DataTable.vue'
+import type { ChartConfig, Dataset, ViewMode } from './types'
 
-const dataset = ref(loadDemo())
+const dataset = ref<Dataset | null>(loadDemo())
 const error = ref('')
 const busy = ref(false)
 // split (default) | chart | data -- which pane fills the content area.
-const view = ref('split')
-const config = reactive({
+const view = ref<ViewMode>('split')
+const config = reactive<ChartConfig>({
   type: 'bar',
   xFields: ['月份'],
   xSeparator: ' / ',
@@ -29,6 +30,12 @@ const config = reactive({
   title: '月度销售额趋势',
   height: 420,
 })
+
+const viewOptions: { v: ViewMode; label: string }[] = [
+  { v: 'chart', label: '图表' },
+  { v: 'split', label: '分屏' },
+  { v: 'data', label: '数据' },
+]
 
 // Reset the mapping whenever a new file (or the demo data) is loaded.
 watch(dataset, (data) => {
@@ -45,41 +52,43 @@ watch(dataset, (data) => {
 
 // Excluded rows leave the chart and exports, but stay visible (marked) in the
 // preview table so they can be brought back.
-const activeDataset = computed(() => {
+const activeDataset = computed<Dataset | null>(() => {
   const data = dataset.value
   if (!data || !config.excludedRows.length) return data
   const rows = data.rows.filter((_, index) => !config.excludedRows.includes(index))
   return { ...data, rows, rowCount: rows.length }
 })
 
-function toggleRow(index) {
+function toggleRow(index: number): void {
   const excluded = new Set(config.excludedRows)
   if (excluded.has(index)) excluded.delete(index)
   else excluded.add(index)
   config.excludedRows = [...excluded]
 }
 
-function resetRows() { config.excludedRows = [] }
+function resetRows(): void { config.excludedRows = [] }
 
 const option = computed(() => buildOption(activeDataset.value, config))
-const baseName = computed(() => safeFilename(dataset.value.name.replace(/\.[^.]+$/, '')))
+const baseName = computed(() => (
+  dataset.value ? safeFilename(dataset.value.name.replace(/\.[^.]+$/, '')) : 'chart'
+))
 
-async function handleFile(file) {
+async function handleFile(file: File): Promise<void> {
   error.value = ''
   busy.value = true
   try {
     dataset.value = await parseFile(file)
-  } catch (e) {
-    error.value = e?.message || '文件解析失败，请检查文件内容'
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : '文件解析失败，请检查文件内容'
   } finally {
     busy.value = false
   }
 }
 
-function loadSample() { dataset.value = loadDemo() }
+function loadSample(): void { dataset.value = loadDemo() }
 
-function downloadData(kind) {
-  if (!dataset.value) return
+function downloadData(kind: 'csv' | 'json'): void {
+  if (!dataset.value || !activeDataset.value) return
   if (kind === 'csv') {
     exportCSV(activeDataset.value, `${baseName.value}.csv`)
     return
@@ -125,7 +134,7 @@ function downloadData(kind) {
       <aside class="sidebar">
         <FileDrop :busy="busy" @file="handleFile" @demo="loadSample" />
         <div v-if="error" class="error-box">{{ error }}</div>
-        <ChartOptions v-if="dataset" v-model="config" :dataset="activeDataset" />
+        <ChartOptions v-if="activeDataset" v-model="config" :dataset="activeDataset" />
         <details class="tip-card">
           <summary>使用提示</summary>
           <div class="tip-body">
@@ -140,7 +149,7 @@ function downloadData(kind) {
         <div class="view-toolbar">
           <div class="view-tabs" role="tablist" aria-label="视图模式">
             <button
-              v-for="item in [{ v: 'chart', label: '图表' }, { v: 'split', label: '分屏' }, { v: 'data', label: '数据' }]"
+              v-for="item in viewOptions"
               :key="item.v"
               type="button"
               role="tab"
@@ -161,7 +170,7 @@ function downloadData(kind) {
           </div>
           <div v-show="view !== 'chart'" class="pane pane-data">
             <DataTable
-              v-if="dataset"
+              v-if="activeDataset"
               :dataset="activeDataset"
               :excluded-rows="config.excludedRows"
               fill

@@ -1,9 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
-import { CHART_TYPES, AGGREGATES, PALETTE_LABELS, PALETTES } from '../utils/chart.js'
+import { CHART_TYPES, AGGREGATES, PALETTE_LABELS, PALETTES } from '../utils/chart'
+import type { ChartConfig, Dataset } from '../types'
 
-const model = defineModel({ type: Object, required: true })
-const props = defineProps({ dataset: { type: Object, required: true } })
+const model = defineModel<ChartConfig>({ required: true })
+const props = defineProps<{ dataset: Dataset }>()
 
 // Which option groups are expanded. Basic stays open; advanced groups are
 // collapsed by default so the sidebar does not push the chart off screen.
@@ -31,19 +32,19 @@ watch(() => model.value.stackField, (field) => {
   if (field) open.stack = true
 })
 
-function toggleAllStackValues() {
+function toggleAllStackValues(): void {
   // Toggling back to empty restores the generator's "first 4" default.
   model.value.stackValues = allStackSelected.value ? [] : [...stackValueOptions.value]
 }
 
-function toggleStackValue(value) {
+function toggleStackValue(value: string): void {
   const set = new Set(activeStackValues.value)
   if (set.has(value)) set.delete(value)
   else set.add(value)
   model.value.stackValues = stackValueOptions.value.filter((v) => set.has(v))
 }
 
-function toggleXField(field) {
+function toggleXField(field: string): void {
   const current = model.value.xFields || []
   if (current.includes(field)) {
     if (current.length > 1) model.value.xFields = current.filter((f) => f !== field)
@@ -52,7 +53,7 @@ function toggleXField(field) {
   }
 }
 
-function toggleField(field) {
+function toggleField(field: string): void {
   const current = model.value.yFields
   if (current.includes(field)) {
     if (current.length > 1) model.value.yFields = current.filter((f) => f !== field)

@@ -1,18 +1,25 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
+import type { CellValue, Dataset } from '../types'
 
-const props = defineProps({
-  dataset: { type: Object, required: true },
-  excludedRows: { type: Array, default: () => [] },
-  fill: { type: Boolean, default: false },
+const props = withDefaults(defineProps<{
+  dataset: Dataset
+  excludedRows?: number[]
+  fill?: boolean
+}>(), {
+  excludedRows: () => [],
+  fill: false,
 })
-const emit = defineEmits(['toggle-row', 'reset-rows'])
+const emit = defineEmits<{
+  'toggle-row': [index: number]
+  'reset-rows': []
+}>()
 
 const excluded = computed(() => new Set(props.excludedRows))
 const visibleRows = computed(() => props.dataset.rows.slice(0, 100))
 const numeric = computed(() => new Set(props.dataset.numericColumns))
 
-function display(value) {
+function display(value: CellValue): string | number {
   if (value === null || value === undefined || value === '') return '—'
   if (typeof value === 'number') return Number(value.toFixed(4)).toLocaleString('zh-CN')
   return value

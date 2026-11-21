@@ -1,22 +1,33 @@
-export const PALETTES = {
+import type { EChartsOption } from 'echarts'
+import type {
+  AggregateMethod,
+  CellValue,
+  ChartConfig,
+  ChartType,
+  DataRow,
+  Dataset,
+  PaletteKey,
+} from '../types'
+
+export const PALETTES: Record<PaletteKey, string[]> = {
   ocean: ['#3b82f6', '#06b6d4', '#8b5cf6', '#ec4899', '#f59e0b'],
   forest: ['#10b981', '#84cc16', '#14b8a6', '#65a30d', '#0ea5e9'],
   sunset: ['#f97316', '#ef4444', '#f59e0b', '#eab308', '#8b5cf6'],
 }
 
-export const PALETTE_LABELS = {
+export const PALETTE_LABELS: Record<PaletteKey, string> = {
   ocean: '海洋蓝',
   forest: '森林绿',
   sunset: '暖阳橙',
 }
 
-export const CHART_TYPES = [
+export const CHART_TYPES: { value: ChartType; label: string }[] = [
   { value: 'bar', label: '柱状图' },
   { value: 'line', label: '折线图' },
   { value: 'pie', label: '饼图' },
 ]
 
-export const AGGREGATES = [
+export const AGGREGATES: { value: AggregateMethod; label: string }[] = [
   { value: 'sum', label: '求和' },
   { value: 'avg', label: '平均值' },
   { value: 'count', label: '计数' },
@@ -25,11 +36,11 @@ export const AGGREGATES = [
   { value: 'first', label: '首条值' },
 ]
 
-function aggregate(values, method) {
+function aggregate(values: CellValue[], method: AggregateMethod): number {
   if (method === 'count') {
     return values.filter((v) => v !== null && v !== undefined && v !== '').length
   }
-  const nums = values.filter((v) => typeof v === 'number' && Number.isFinite(v))
+  const nums = values.filter((v): v is number => typeof v === 'number' && Number.isFinite(v))
   if (!nums.length) return 0
   if (method === 'avg') return nums.reduce((a, b) => a + b, 0) / nums.length
   if (method === 'max') return Math.max(...nums)
@@ -38,11 +49,11 @@ function aggregate(values, method) {
   return nums.reduce((a, b) => a + b, 0)
 }
 
-function round(value) {
+function round(value: number): number {
   return Math.round(value * 10000) / 10000
 }
 
-export function buildOption(dataset, config) {
+export function buildOption(dataset: Dataset | null | undefined, config: ChartConfig): EChartsOption | null {
   if (!dataset || !dataset.columns.length) return null
 
   const requestedX = Array.isArray(config.xFields)
@@ -73,29 +84,30 @@ export function buildOption(dataset, config) {
   const stackValues = useStack ? selectedStack : ['']
   const doStack = useStack && config.stacked !== false
 
-  const rowXKey = (row) => xFields.map((field) => String(row[field] ?? '')).join(separator)
+  const rowXKey = (row: DataRow) => xFields.map((field) => String(row[field] ?? '')).join(separator)
   const eligibleRows = dataset.rows.filter((row) => (
     !useStack || selectedStack.includes(String(row[stackField] ?? ''))
   ))
   const limit = Math.max(1, Number(config.limit) || 24)
   const categories = [...new Set(eligibleRows.map(rowXKey))].slice(0, limit)
 
-  // buckets[stackValue\u0000xKey] = per-value-field arrays of raw values
-  const buckets = new Map()
+  // buckets[stackValue\x00xKey] = per-value-field arrays of raw values
+  const buckets = new Map<string, CellValue[][]>()
   dataset.rows.forEach((row) => {
     const stackValue = useStack ? String(row[stackField] ?? '') : ''
     if (useStack && !selectedStack.includes(stackValue)) return
     const xKey = rowXKey(row)
     if (!categories.includes(xKey)) return
     const key = `${stackValue}\u0000${xKey}`
-    if (!buckets.has(key)) buckets.set(key, fields.map(() => []))
+    if (!buckets.has(key)) buckets.set(key, fields.map((): CellValue[] => []))
     const bucket = buckets.get(key)
+    if (!bucket) return
     fields.forEach((field, i) => {
       const value = row[field]
       if (value !== '' && value !== null && value !== undefined) bucket[i].push(value)
     })
   })
-  const valueAt = (stackValue, xKey, index) => round(
+  const valueAt = (stackValue: string, xKey: string, index: number) => round(
     aggregate(buckets.get(`${stackValue}\u0000${xKey}`)?.[index] || [], config.aggregate),
   )
 
@@ -103,7 +115,7 @@ export function buildOption(dataset, config) {
   const isPie = config.type === 'pie'
   const stackLabel = stackField ? `（按${stackField}堆叠）` : ''
 
-  const option = {
+  const option: EChartsOption = {
     color: palette,
     animationDuration: 350,
     title: {
@@ -113,7 +125,7 @@ export function buildOption(dataset, config) {
       textStyle: { fontSize: 17, fontWeight: 600, color: '#1f2937' },
     },
     tooltip: isPie
-      ? { trigger: 'item', valueFormatter: (v) => round(Number(v)) }
+      ? { trigger: 'item', valueFormatter: (v: unknown) => String(round(Number(v))) }
       : { trigger: 'axis', axisPointer: { type: 'shadow' } },
     legend: {
       top: 34,
@@ -123,6 +135,7 @@ export function buildOption(dataset, config) {
       itemHeight: 8,
       textStyle: { color: '#6b7280', fontSize: 12 },
     },
+    series: [],
   }
 
   if (isPie) {
@@ -155,10 +168,11 @@ export function buildOption(dataset, config) {
     option.series = []
     stackValues.forEach((sv) => {
       fields.forEach((field, i) => {
-        option.series.push({
+        const series = option.series as Record<string, unknown>[]
+        series.push({
           name: useStack ? `${sv} · ${field}` : field,
           type,
-          stack: doStack && fields.length === 1 ? 'total' : (doStack ? `${field}` : undefined),
+          stack: doStack && fields.length === 1 ? 'total' : (doStack ? field : undefined),
           smooth: type === 'line',
           showSymbol: type === 'line' && categories.length <= 20,
           barMaxWidth: 36,

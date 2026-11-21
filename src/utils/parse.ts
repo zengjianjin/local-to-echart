@@ -1,8 +1,15 @@
 import * as XLSX from 'xlsx'
+import type { DataRow, Dataset, Table } from '../types'
 
 const DELIMITERS = [',', '\t', ';', '|']
 
-function countOutsideQuotes(text, delimiter) {
+/** Minimal shape of an Excel merged-cell range (only what the header logic needs). */
+interface MergeRange {
+  s: { r: number; c: number }
+  e: { r: number; c: number }
+}
+
+function countOutsideQuotes(text: string, delimiter: string): number {
   let count = 0
   let inQuotes = false
   for (let i = 0; i < text.length; i += 1) {
@@ -17,7 +24,7 @@ function countOutsideQuotes(text, delimiter) {
   return count
 }
 
-export function detectDelimiter(text) {
+export function detectDelimiter(text: string): string {
   const sample = text.split(/\r?\n/).slice(0, 5).join('\n')
   return DELIMITERS.reduce(
     (best, d) => (countOutsideQuotes(sample, d) > countOutsideQuotes(sample, best) ? d : best),
@@ -25,9 +32,9 @@ export function detectDelimiter(text) {
   )
 }
 
-function splitDelimited(text, delimiter) {
-  const rows = []
-  let row = []
+function splitDelimited(text: string, delimiter: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
   let field = ''
   let inQuotes = false
 
@@ -59,7 +66,7 @@ function splitDelimited(text, delimiter) {
   return rows
 }
 
-export function toNumber(value) {
+export function toNumber(value: unknown): number | null {
   if (value === null || value === undefined) return null
   if (typeof value === 'number') return Number.isFinite(value) ? value : null
   const cleaned = String(value).trim().replace(/[,\s%¥$]/g, '')
@@ -68,7 +75,7 @@ export function toNumber(value) {
   return Number.isFinite(n) ? n : null
 }
 
-function isNumericColumn(rows, column) {
+function isNumericColumn(rows: DataRow[], column: string): boolean {
   const present = rows.map((r) => r[column]).filter((v) => v !== '' && v !== null && v !== undefined)
   if (!present.length) return false
   const numeric = present.filter((v) => toNumber(v) !== null).length
@@ -78,7 +85,7 @@ function isNumericColumn(rows, column) {
 // Decide whether the first N rows form a multi-level header.
 // A second header row is detected when row 1 is mostly non-numeric while
 // row 2 continues the header structure (merged spans or repeated group labels).
-function detectHeaderRowCount(matrix, merges) {
+function detectHeaderRowCount(matrix: unknown[][], merges: MergeRange[]): number {
   if (matrix.length < 3) return 1
   const hasVerticalMergeInFirstRow = merges.some((m) => m.s.r === 0 && m.e.r >= 1)
   const hasHorizontalMergeInFirstRow = merges.some((m) => m.s.r === m.e.r && m.s.r === 0 && m.e.c > m.s.c)
@@ -93,14 +100,13 @@ function detectHeaderRowCount(matrix, merges) {
 }
 
 // Expand merged header cells and join two header levels into unique names.
-function expandMergedHeaders(matrix, merges, headerRows) {
+function expandMergedHeaders(matrix: unknown[][], merges: MergeRange[], headerRows: number): unknown[][] {
   if (headerRows < 2) return matrix
 
   const grid = matrix.slice()
-  const height = grid.length
   const width = Math.max(...grid.map((r) => r.length))
 
-  const fill = (rowIndex) => {
+  const fill = (rowIndex: number) => {
     merges
       .filter((m) => m.s.r <= rowIndex && m.e.r >= rowIndex)
       .forEach((m) => {
@@ -118,7 +124,7 @@ function expandMergedHeaders(matrix, merges, headerRows) {
 
   const first = grid[0]
   const second = grid[1] || []
-  const names = []
+  const names: string[] = []
   for (let c = 0; c < width; c += 1) {
     const top = String(first[c] ?? '').trim()
     const sub = String(second[c] ?? '').trim()
@@ -136,15 +142,15 @@ function expandMergedHeaders(matrix, merges, headerRows) {
   return grid
 }
 
-function toTable(rawRows) {
+function toTable(rawRows: unknown[][]): Table {
   const clean = rawRows.filter((row) => row.some((cell) => String(cell).trim() !== ''))
   if (!clean.length) throw new Error('文件里没有可读取的数据行')
 
-  const seen = new Map()
+  const seen = new Map<string, number>()
   const columns = clean[0].map((raw, i) => {
     let name = String(raw).trim() || `列${i + 1}`
     if (seen.has(name)) {
-      const n = seen.get(name) + 1
+      const n = (seen.get(name) ?? 0) + 1
       seen.set(name, n)
       name = `${name}_${n}`
     } else {
@@ -153,8 +159,8 @@ function toTable(rawRows) {
     return name
   })
 
-  const rows = clean.slice(1).map((row) => {
-    const item = {}
+  const rows: DataRow[] = clean.slice(1).map((row) => {
+    const item: DataRow = {}
     columns.forEach((col, i) => {
       item[col] = row[i] === undefined ? '' : String(row[i]).trim()
     })
@@ -169,26 +175,26 @@ function toTable(rawRows) {
   return { columns, rows, numericColumns }
 }
 
-export function parseDelimited(text) {
+export function parseDelimited(text: string): Table {
   const normalized = String(text).replace(/^\uFEFF/, '')
   return toTable(splitDelimited(normalized, detectDelimiter(normalized)))
 }
 
-export async function parseFile(file) {
+export async function parseFile(file: File): Promise<Dataset> {
   const name = file.name || '未命名文件'
-  const ext = name.split('.').pop().toLowerCase()
-  let table
+  const ext = name.split('.').pop()?.toLowerCase() ?? ''
+  let table: Table
 
   if (['xlsx', 'xls', 'xlsm'].includes(ext)) {
     const buffer = await file.arrayBuffer()
     const workbook = XLSX.read(buffer, { type: 'array', cellDates: false })
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
     if (!sheet) throw new Error('Excel 文件里没有工作表')
-    const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false })
+    const matrix = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false }) as unknown[][]
     // Support merged / two-level headers (common in Chinese billing exports).
     // sheet_to_json fills merged cells with empty strings, so back-fill them
     // from the merge ranges before building composite column names.
-    const merges = sheet['!merges'] || []
+    const merges = (sheet['!merges'] || []) as MergeRange[]
     const headerRows = detectHeaderRowCount(matrix, merges)
     const expanded = expandMergedHeaders(matrix, merges, headerRows)
     table = toTable(expanded)

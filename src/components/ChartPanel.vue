@@ -1,19 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import * as echarts from 'echarts'
+import type { ECharts, EChartsOption } from 'echarts'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
-import { exportPNG, exportSVG, exportPDF } from '../utils/download.js'
+import { exportPNG, exportSVG, exportPDF } from '../utils/download'
 
-const props = defineProps({
-  option: { type: Object, default: null },
-  filename: { type: String, default: 'chart' },
-  height: { type: Number, default: 420 },
-  fill: { type: Boolean, default: false },
+const props = withDefaults(defineProps<{
+  option: EChartsOption | null
+  filename?: string
+  height?: number
+  fill?: boolean
+}>(), {
+  filename: 'chart',
+  height: 420,
+  fill: false,
 })
 
-const canvas = ref(null)
+const canvas = ref<HTMLDivElement | null>(null)
 const exporting = ref(false)
-let chart = null
-let observer = null
+let chart: ECharts | null = null
+let observer: ResizeObserver | null = null
 
 function resize() {
   const el = canvas.value
@@ -21,6 +26,7 @@ function resize() {
 }
 
 onMounted(() => {
+  if (!canvas.value) return
   chart = echarts.init(canvas.value)
   if (props.option) chart.setOption(props.option, true)
   observer = new ResizeObserver(resize)
@@ -39,15 +45,17 @@ watch(() => props.option, (option) => {
   if (chart && option) chart.setOption(option, true)
 })
 
-function titleText() {
-  const title = props.option?.title
+function titleText(): string {
+  const title = props.option?.title as unknown
   if (!title) return ''
-  return Array.isArray(title) ? title[0]?.text || '' : title.text || ''
+  if (typeof title === 'string') return title
+  if (Array.isArray(title)) return (title[0] as { text?: string } | undefined)?.text || ''
+  return (title as { text?: string }).text || ''
 }
 
-function savePNG() { if (chart) exportPNG(chart, `${props.filename}.png`) }
-function saveSVG() { if (chart) exportSVG(chart, `${props.filename}.svg`) }
-async function savePDF() {
+function savePNG(): void { if (chart) exportPNG(chart, `${props.filename}.png`) }
+function saveSVG(): void { if (chart) exportSVG(chart, `${props.filename}.svg`) }
+async function savePDF(): Promise<void> {
   if (!chart) return
   exporting.value = true
   try {

@@ -1,6 +1,8 @@
 import * as echarts from 'echarts'
+import type { ECharts } from 'echarts'
+import type { Dataset } from '../types'
 
-function triggerBlobDownload(blob, filename) {
+function triggerBlobDownload(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -11,7 +13,7 @@ function triggerBlobDownload(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-function triggerUrlDownload(url, filename) {
+function triggerUrlDownload(url: string, filename: string): void {
   const link = document.createElement('a')
   link.href = url
   link.download = filename
@@ -20,12 +22,12 @@ function triggerUrlDownload(url, filename) {
   link.remove()
 }
 
-export function exportPNG(chart, filename) {
+export function exportPNG(chart: ECharts, filename: string): void {
   const url = chart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' })
   triggerUrlDownload(url, filename)
 }
 
-export function exportSVG(chart, filename) {
+export function exportSVG(chart: ECharts, filename: string): void {
   // getDataURL({ type: 'svg' }) only works on an SVG-renderer chart. The live
   // chart uses the canvas renderer, so that call silently returns a PNG data
   // URL -- saved as .svg, browsers report "no style information". Re-render
@@ -46,13 +48,13 @@ export function exportSVG(chart, filename) {
   }
 }
 
-export async function exportPDF(chart, title, filename) {
+export async function exportPDF(chart: ECharts, title: string, filename: string): Promise<void> {
   const { jsPDF } = await import('jspdf')
   const url = chart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' })
   const image = new Image()
-  await new Promise((resolve, reject) => {
-    image.onload = resolve
-    image.onerror = reject
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve()
+    image.onerror = () => reject(new Error('图表图片加载失败'))
     image.src = url
   })
   const width = 280
@@ -63,8 +65,8 @@ export async function exportPDF(chart, title, filename) {
   pdf.save(filename)
 }
 
-export function exportCSV(dataset, filename) {
-  const escape = (value) => {
+export function exportCSV(dataset: Dataset, filename: string): void {
+  const escape = (value: unknown): string => {
     const text = value === null || value === undefined ? '' : String(value)
     return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
   }
@@ -75,13 +77,13 @@ export function exportCSV(dataset, filename) {
   triggerBlobDownload(new Blob([`\uFEFF${lines.join('\r\n')}`], { type: 'text/csv;charset=utf-8' }), filename)
 }
 
-export function exportJSON(data, filename) {
+export function exportJSON(data: unknown, filename: string): void {
   triggerBlobDownload(
     new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' }),
     filename,
   )
 }
 
-export function safeFilename(name) {
+export function safeFilename(name: string): string {
   return String(name || 'chart').replace(/[\\/:*?"<>|]/g, '_').slice(0, 60)
 }
