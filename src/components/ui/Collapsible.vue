@@ -21,14 +21,24 @@ function toggle() {
   expanded.value = !expanded.value
   emit('update:open', expanded.value)
 }
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    toggle()
+  }
+}
 </script>
 
 <template>
   <section class="overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.025]">
-    <button
-      type="button"
-      class="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-white/[0.04]"
+    <div
+      role="button"
+      tabindex="0"
+      :aria-expanded="expanded"
+      class="flex w-full items-center gap-2 px-2.5 py-1.5 text-left transition hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
       @click="toggle"
+      @keydown="onKeydown"
     >
       <ChevronDown
         :size="14"
@@ -44,7 +54,10 @@ function toggle() {
       >
         {{ count }}
       </span>
-    </button>
+      <div class="flex shrink-0 items-center gap-0.5" @click.stop @keydown.stop>
+        <slot name="actions" />
+      </div>
+    </div>
     <div v-if="expanded" class="animate-fade-in border-t border-white/[0.06] px-3 py-3">
       <slot />
     </div>

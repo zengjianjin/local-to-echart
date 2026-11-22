@@ -122,6 +122,20 @@ function updatePrimitive(index: number, value: string) {
 
     <div v-for="(item, index) in items" :key="`${arrayPath}-${index}`" class="space-y-2">
       <Collapsible :title="itemTitle(item, index)" :description="`索引 ${index}`" :open="index === 0">
+        <template #actions>
+          <Button size="icon" title="上移" :disabled="index === 0" @click="moveItem(index, -1)">
+            <ArrowUp :size="12" />
+          </Button>
+          <Button size="icon" title="下移" :disabled="index === items.length - 1" @click="moveItem(index, 1)">
+            <ArrowDown :size="12" />
+          </Button>
+          <Button size="icon" title="复制" @click="duplicateItem(index)">
+            <Copy :size="12" />
+          </Button>
+          <Button size="icon" variant="danger" title="删除" @click="removeItem(index)">
+            <Trash2 :size="12" />
+          </Button>
+        </template>
         <template #default>
           <div v-if="isPrimitiveArray" class="flex items-center gap-2">
             <GripVertical :size="12" class="text-ink-600" />
@@ -142,20 +156,6 @@ function updatePrimitive(index: number, value: string) {
             />
           </div>
 
-          <div class="mt-3 flex items-center justify-end gap-1 border-t border-white/[0.06] pt-2">
-            <Button size="icon" title="上移" :disabled="index === 0" @click="moveItem(index, -1)">
-              <ArrowUp :size="12" />
-            </Button>
-            <Button size="icon" title="下移" :disabled="index === items.length - 1" @click="moveItem(index, 1)">
-              <ArrowDown :size="12" />
-            </Button>
-            <Button size="icon" title="复制" @click="duplicateItem(index)">
-              <Copy :size="12" />
-            </Button>
-            <Button size="icon" variant="danger" title="删除" @click="removeItem(index)">
-              <Trash2 :size="12" />
-            </Button>
-          </div>
         </template>
       </Collapsible>
     </div>

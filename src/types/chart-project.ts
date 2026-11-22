@@ -31,6 +31,7 @@ export interface ChartProjectFile {
   meta: {
     name: string
     updatedAt?: string
+    xFields?: number[]
   }
   option: SerializableEchartsOption
   table?: TableData

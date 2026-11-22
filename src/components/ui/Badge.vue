@@ -9,9 +9,9 @@ const props = withDefaults(
 const variants = {
   neutral: 'border-white/10 bg-white/5 text-ink-200',
   primary: 'border-primary/25 bg-primary/12 text-primary-100',
-  success: 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200',
-  warning: 'border-amber-400/25 bg-amber-400/10 text-amber-200',
-  danger: 'border-rose-400/25 bg-rose-400/10 text-rose-200',
+  success: 'border-emerald-400/25 bg-emerald-400/10 text-emerald-700 dark:text-emerald-200',
+  warning: 'border-amber-400/25 bg-amber-400/10 text-amber-700 dark:text-amber-200',
+  danger: 'border-rose-400/25 bg-rose-400/10 text-rose-700 dark:text-rose-200',
 }
 </script>
 

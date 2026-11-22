@@ -11,6 +11,13 @@ export const axisItemFields: FieldSchema[] = [
   { path: 'min', label: '最小值', section: 'axes', kind: 'string', placeholder: '例如：0 或 dataMin' },
   { path: 'max', label: '最大值', section: 'axes', kind: 'string', placeholder: '例如：100 或 dataMax' },
   { path: 'splitNumber', label: '分段数', section: 'axes', kind: 'number', min: 1, max: 30 },
+  {
+    path: 'alignTicks',
+    label: '刻度对齐',
+    section: 'axes',
+    kind: 'boolean',
+    description: '多个 Y 轴时自动对齐刻度，使分隔线处于同一水平位置',
+  },
   { path: 'boundaryGap', label: '两端留白', section: 'axes', kind: 'boolean' },
   { path: 'inverse', label: '反向', section: 'axes', kind: 'boolean' },
   {

@@ -9,6 +9,7 @@ const { state, replaceOption, setOptionValueAt, removeOptionValueAt, resetProjec
 const jsonDraft = ref(stringifyOption(state.project.option))
 const jsonError = ref('')
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+let applyingDraft = false
 
 function syncDraft() {
   jsonDraft.value = stringifyOption(state.project.option)
@@ -17,9 +18,10 @@ function syncDraft() {
 watch(
   () => state.project.option,
   () => {
-    if (state.ui.editorMode !== 'json') syncDraft()
+    if (applyingDraft) return
+    syncDraft()
   },
-  { deep: true },
+  { deep: true, flush: 'sync' },
 )
 
 watch(
@@ -39,7 +41,12 @@ function applyDraft() {
     return
   }
   jsonError.value = ''
-  replaceOption(result.option)
+  applyingDraft = true
+  try {
+    replaceOption(result.option)
+  } finally {
+    applyingDraft = false
+  }
 }
 
 function onJsonInput(value: string) {

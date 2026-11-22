@@ -1,5 +1,6 @@
 import type { SerializableEchartsOption, TableData } from '@/types'
 import { cloneSerializableOption } from './optionClone'
+import { keepNonCartesianSeries } from './seriesKind'
 
 export function createInitialOption(): SerializableEchartsOption {
   return {
@@ -24,6 +25,7 @@ export function tableToSource(table: TableData): Array<Array<string | number | b
 export function applyTableToOption(
   table: TableData,
   option: SerializableEchartsOption,
+  xFields: number[] = [0],
 ): SerializableEchartsOption {
   const next = cloneSerializableOption(option)
   const source = tableToSource(table)
@@ -36,17 +38,32 @@ export function applyTableToOption(
   else datasets.unshift(datasetNode)
   next.dataset = datasets
 
-  const series = Array.isArray(next.series) ? next.series : []
-  if (!series.length && table.columns.length > 1) {
-    const valueIndex = table.inferredTypes.findIndex((type, index) => index > 0 && type === 'number')
-    const yIndex = valueIndex >= 0 ? valueIndex : 1
-    series.push({
-      id: 'workspace-series-1',
-      name: table.columns[yIndex],
-      type: 'bar',
-      encode: { x: 0, y: [yIndex] },
-    })
-    next.series = series
+  const oldSeries = Array.isArray(next.series) ? next.series : []
+  const customSeries = oldSeries.filter(
+    (item) => !(Boolean(item) && typeof item === 'object' && String((item as Record<string, unknown>).id ?? '').startsWith('workspace-series')),
+  )
+
+  const xAxisReady = Array.isArray(next.xAxis) ? next.xAxis.length > 0 : Boolean(next.xAxis)
+  const yAxisReady = Array.isArray(next.yAxis) ? next.yAxis.length > 0 : Boolean(next.yAxis)
+  if (!xAxisReady || !yAxisReady) {
+    next.series = keepNonCartesianSeries(customSeries)
+    return next
   }
+
+  const valueIndexes = table.inferredTypes
+    .map((type, index) => ({ type, index }))
+    .filter((item) => item.index > 0 && item.type === 'number')
+    .map((item) => item.index)
+  const finalValueIndexes = valueIndexes.length ? valueIndexes : (table.columns.length > 1 ? [1] : [])
+  const xIndex = xFields[0] ?? 0
+
+  const autoSeries = finalValueIndexes.map((valueIndex) => ({
+    id: `workspace-series-${valueIndex}`,
+    name: table.columns[valueIndex],
+    type: 'bar',
+    xAxisIndex: 0,
+    encode: { x: xIndex, y: [valueIndex] },
+  }))
+  next.series = [...customSeries, ...autoSeries]
   return next
 }

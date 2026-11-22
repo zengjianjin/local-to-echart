@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BarChart3, Database, Moon, PanelLeftClose, PanelLeftOpen, SlidersHorizontal, Sun } from 'lucide-vue-next'
+import { Database, Moon, PanelLeftClose, PanelLeftOpen, SlidersHorizontal, Sun } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import DataImportPanel from '@/components/data/DataImportPanel.vue'
 import DataPreviewDialog from '@/components/data/DataPreviewDialog.vue'
@@ -20,9 +20,7 @@ const { state, toggleTheme } = useWorkspaceStore()
         <PanelLeftClose v-else :size="14" />
       </Button>
 
-      <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-violet-500 to-mint-500 shadow-glow">
-        <BarChart3 :size="17" />
-      </div>
+      <img src="/favicon.svg" alt="" class="h-8 w-8 rounded-xl shadow-glow" />
       <div>
         <div class="text-[13px] font-semibold tracking-tight text-ink-50">Local to ECharts Studio</div>
         <div class="text-[9px] text-ink-500">完整 ECharts Option 本地编辑器</div>

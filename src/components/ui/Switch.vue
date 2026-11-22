@@ -36,7 +36,7 @@ function onClick() {
     <span
       :class="
         cn(
-          'pointer-events-none absolute left-[2px] h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-150',
+          'pointer-events-none absolute left-[2px] h-4 w-4 rounded-full bg-pure shadow-sm transition-transform duration-150',
           props.indeterminate ? 'translate-x-2 opacity-70' : props.modelValue ? 'translate-x-4' : 'translate-x-0',
         )
       "

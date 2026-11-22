@@ -16,7 +16,14 @@ export interface ExportSize {
   height: number | null
 }
 
-const BACKGROUND = '#0F172A'
+const DEFAULT_BACKGROUND = '#FFFFFF'
+
+function backgroundFor(option: RuntimeOption): string {
+  const value = option.backgroundColor
+  return typeof value === 'string' && value.trim() && value !== 'transparent'
+    ? value
+    : DEFAULT_BACKGROUND
+}
 
 function safeName(name: string): string {
   return name.replace(/[\\/:*?"<>|]+/g, '-').trim() || 'chart'
@@ -39,14 +46,14 @@ function imageUrl(chart: ChartLike | null, option: RuntimeOption, size: ExportSi
   if (hasCustomSize(size)) {
     const { instance, host } = renderOffscreen(option, size.width!, size.height!, 'canvas')
     try {
-      return instance.getDataURL({ type, pixelRatio: 1, backgroundColor: BACKGROUND })
+      return instance.getDataURL({ type, pixelRatio: 1, backgroundColor: backgroundFor(option) })
     } finally {
       instance.dispose()
       host.remove()
     }
   }
   if (!chart) throw new Error('图表实例尚未就绪')
-  return chart.getDataURL({ type, pixelRatio: 2, backgroundColor: BACKGROUND })
+  return chart.getDataURL({ type, pixelRatio: 2, backgroundColor: backgroundFor(option) })
 }
 
 function svgUrl(chart: ChartLike | null, option: RuntimeOption, size: ExportSize): string {

@@ -53,7 +53,7 @@ function save(key: string) {
 
     <div v-for="key in unknownKeys" :key="key" class="space-y-2 rounded-xl border border-amber-300/15 bg-amber-400/[0.04] p-3">
       <div class="flex items-center justify-between">
-        <code class="text-[11px] font-medium text-amber-100">{{ key }}</code>
+        <code class="text-[11px] font-medium text-amber-800 dark:text-amber-100">{{ key }}</code>
         <Badge variant="warning">未知</Badge>
       </div>
       <textarea

@@ -18,7 +18,7 @@ const emit = defineEmits<{ (event: 'update:modelValue', value: string): void }>(
         cn(
           'rounded-md px-2.5 py-1 text-[11px] font-medium transition-all',
           props.modelValue === option.value
-            ? 'bg-gradient-to-r from-primary/90 to-violet-500/90 text-white shadow-sm'
+            ? 'bg-gradient-to-r from-primary/90 to-violet-500/90 text-pure shadow-sm'
             : 'text-ink-400 hover:text-ink-100',
         )
       "

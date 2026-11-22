@@ -57,7 +57,7 @@ onBeforeUnmount(() => {
       <div class="ml-auto flex gap-1.5">
         <button
           type="button"
-          class="rounded-md border border-white/10 px-2 py-1 text-[10px] text-ink-300 transition hover:border-primary/40 hover:text-white"
+          class="rounded-md border border-white/10 px-2 py-1 text-[10px] text-ink-300 transition hover:border-primary/40 hover:text-ink-50"
           @click="syncDraft"
         >
           重新载入
@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
 
     <div
       v-if="jsonError"
-      class="shrink-0 border-t border-rose-400/20 bg-rose-500/10 px-3 py-1.5 text-[10px] text-rose-200"
+      class="shrink-0 border-t border-rose-400/20 bg-rose-500/10 px-3 py-1.5 text-[10px] text-rose-700 dark:text-rose-200"
     >
       {{ jsonError }}
     </div>

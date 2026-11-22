@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue'
-import { FileCode2, FileJson, FileText, Image as ImageIcon, Upload } from 'lucide-vue-next'
+import { computed, useTemplateRef } from 'vue'
+import { Contrast, FileCode2, FileJson, FileText, Grid3x3, Image as ImageIcon, Upload } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import Badge from '@/components/ui/Badge.vue'
 import Input from '@/components/ui/Input.vue'
@@ -11,10 +11,15 @@ import {
   exportSizePresets,
   useExport,
 } from '@/composables/useExport'
+import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
+import { getOptionValue } from '@/utils/optionPath'
 
 const configInput = useTemplateRef<HTMLInputElement>('configInput')
 const { exportImage, exportConfig, importConfig } = useExport()
+const { state, currentChartTheme, setChartTheme, setSplitLineVisibility } = useWorkspaceStore()
 const presetOptions = exportSizePresets.map((item) => ({ label: item.label, value: String(item.value) }))
+const chartTheme = computed(() => currentChartTheme())
+const splitLineOn = computed(() => getOptionValue(state.project.option, 'xAxis[0].splitLine.show') === true)
 </script>
 
 <template>
@@ -22,6 +27,23 @@ const presetOptions = exportSizePresets.map((item) => ({ label: item.label, valu
     <div class="flex items-center gap-2">
       <span class="text-[12px] font-semibold text-ink-50">图表预览</span>
       <Badge variant="success"><span class="h-1.5 w-1.5 rounded-full bg-emerald-400" /> 实时</Badge>
+    </div>
+
+    <div class="ml-2 flex items-center gap-1 border-l border-white/10 pl-2">
+      <Button
+        size="sm"
+        :title="chartTheme === 'light' ? '切换为深色图表背景，PNG/PDF 会跟随' : '切换为浅色图表背景，PNG/PDF 会跟随'"
+        @click="setChartTheme(chartTheme === 'light' ? 'dark' : 'light')"
+      >
+        <Contrast :size="12" /> {{ chartTheme === 'light' ? '深色图表' : '浅色图表' }}
+      </Button>
+      <Button
+        size="sm"
+        :title="splitLineOn ? '隐藏 X/Y 轴网格线' : '显示 X/Y 轴网格线'"
+        @click="setSplitLineVisibility(!splitLineOn)"
+      >
+        <Grid3x3 :size="12" /> 网格线：{{ splitLineOn ? '开' : '关' }}
+      </Button>
     </div>
 
     <div class="ml-auto flex items-center gap-1.5">

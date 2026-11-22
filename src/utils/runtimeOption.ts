@@ -1,4 +1,5 @@
 import type { FormatterDescriptor, SerializableNode } from '@/types'
+import { keepNonCartesianSeries } from './seriesKind'
 
 export interface RuntimeOption {
   [key: string]: unknown
@@ -56,5 +57,14 @@ function materializeNode(node: SerializableNode): unknown {
 }
 
 export function materializeRuntimeOption(option: Record<string, SerializableNode>): RuntimeOption {
-  return materializeNode(option) as RuntimeOption
+  const result = materializeNode(option) as RuntimeOption
+
+  const series = result.series
+  if (Array.isArray(series)) {
+    const xEmpty = Array.isArray(result.xAxis) && result.xAxis.length === 0
+    const yEmpty = Array.isArray(result.yAxis) && result.yAxis.length === 0
+    if (xEmpty || yEmpty) result.series = keepNonCartesianSeries(series as SerializableNode[])
+  }
+
+  return result
 }

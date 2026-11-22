@@ -8,10 +8,11 @@ export default {
     extend: {
       colors: {
         white: 'rgb(var(--surface-white) / <alpha-value>)',
+        pure: '#FFFFFF',
         primary: {
           DEFAULT: '#4F8CFF',
           50: '#EEF4FF',
-          100: '#DCE8FF',
+          100: 'rgb(var(--primary-100) / <alpha-value>)',
           500: '#4F8CFF',
           600: '#3B74E8',
           700: '#2F5FC0',
@@ -33,7 +34,9 @@ export default {
           700: 'rgb(var(--ink-700) / <alpha-value>)',
           600: 'rgb(var(--ink-600) / <alpha-value>)',
           400: 'rgb(var(--ink-400) / <alpha-value>)',
+          300: 'rgb(var(--ink-300) / <alpha-value>)',
           200: 'rgb(var(--ink-200) / <alpha-value>)',
+          100: 'rgb(var(--ink-100) / <alpha-value>)',
           50: 'rgb(var(--ink-50) / <alpha-value>)',
         },
       },

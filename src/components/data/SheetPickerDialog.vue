@@ -53,7 +53,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
               :class="selectedSheet === sheet.name ? 'border-primary bg-primary' : 'border-white/20'"
               class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border"
             >
-              <span v-if="selectedSheet === sheet.name" class="h-1.5 w-1.5 rounded-full bg-white" />
+              <span v-if="selectedSheet === sheet.name" class="h-1.5 w-1.5 rounded-full bg-pure" />
             </span>
             <span class="min-w-0 flex-1 truncate text-[12px] text-ink-50">{{ sheet.name }}</span>
             <span class="shrink-0 font-mono text-[10px] text-ink-500">{{ sheet.rowCount }} 行</span>

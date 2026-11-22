@@ -71,7 +71,7 @@ const { isDragging, onFileChange, onDrop, loadDemo } = useFileImport()
 
     <div
       v-if="state.ui.errorMessage"
-      class="flex items-start gap-2 rounded-lg border border-rose-400/20 bg-rose-500/10 px-2.5 py-2 text-[10px] text-rose-200"
+      class="flex items-start gap-2 rounded-lg border border-rose-400/20 bg-rose-500/10 px-2.5 py-2 text-[10px] text-rose-700 dark:text-rose-200"
     >
       <AlertCircle :size="12" class="mt-0.5 shrink-0" />
       <span class="break-all">{{ state.ui.errorMessage }}</span>
