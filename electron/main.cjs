@@ -1,77 +1,92 @@
-// Electron main process. The renderer is a plain Vite/Vue app -- all product
-// logic (parsing, charts, exports) runs in the renderer, so no preload or
-// native bridge is needed. Keep nodeIntegration off and contextIsolation on.
 const { app, BrowserWindow, shell, Menu } = require('electron')
 const path = require('node:path')
 
-const DEV_URL = process.env.VLE_DEV_URL || 'http://localhost:1420'
-const isDev = !app.isPackaged
+const devUrl = process.env.VLE_DEV_URL || ''
+const isDev = Boolean(devUrl) && !app.isPackaged
 
 let mainWindow = null
 
+function openExternal(url) {
+  if (/^https?:\/\//.test(url)) {
+    shell.openExternal(url)
+  }
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 900,
-    minWidth: 900,
-    minHeight: 600,
-    title: 'local-to-echarts · 本地数据看图工具',
-    backgroundColor: '#f6f7fb',
+    width: 1560,
+    height: 940,
+    minWidth: 1180,
+    minHeight: 720,
+    backgroundColor: '#0B1120',
+    title: 'Local to ECharts Studio',
+    titleBarStyle: 'hiddenInset',
     show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      spellcheck: false,
+      sandbox: true,
     },
   })
 
-  mainWindow.once('ready-to-show', () => mainWindow.show())
-
   if (isDev) {
-    mainWindow.loadURL(DEV_URL)
+    mainWindow.loadURL(devUrl)
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 
-  // Open any http(s) link in the system browser instead of replacing the app.
+  mainWindow.once('ready-to-show', () => {
+    mainWindow?.show()
+    if (isDev) mainWindow?.webContents.openDevTools({ mode: 'detach' })
+  })
+
+  mainWindow.webContents.on('console-message', (event) => {
+    console.error(`[renderer:${event.level}] ${event.message}`)
+  })
+
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:/i.test(url)) shell.openExternal(url)
+    openExternal(url)
     return { action: 'deny' }
   })
+
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    if (isDev && url.startsWith(DEV_URL)) return
-    if (/^https?:/i.test(url)) {
-      event.preventDefault()
-      shell.openExternal(url)
-    }
+    if (isDev && url.startsWith(devUrl)) return
+    if (url.startsWith('file://')) return
+    event.preventDefault()
+    openExternal(url)
   })
 
-  mainWindow.on('closed', () => { mainWindow = null })
-}
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
 
-app.whenReady().then(() => {
-  // Minimal menu: no menu bar in production, reload + devtools in development.
   if (isDev) {
-    Menu.setApplicationMenu(Menu.buildFromTemplate([
-      {
-        label: 'View',
-        submenu: [
-          { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow?.reload() },
-          { role: 'toggleDevTools' },
-        ],
-      },
-    ]))
+    Menu.setApplicationMenu(
+      Menu.buildFromTemplate([
+        { role: 'appMenu' },
+        { role: 'editMenu' },
+        { role: 'viewMenu' },
+        {
+          label: '开发',
+          submenu: [
+            { role: 'reload', label: '重新加载' },
+            { role: 'forceReload', label: '强制重新加载' },
+            { role: 'toggleDevTools', label: '切换开发者工具' },
+          ],
+        },
+      ]),
+    )
   } else {
     Menu.setApplicationMenu(null)
   }
+}
 
-  createWindow()
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
+app.whenReady().then(createWindow)
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow()
 })

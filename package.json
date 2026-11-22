@@ -1,9 +1,8 @@
 {
-  "name": "local-to-echarts",
-  "version": "0.1.0",
+  "name": "local-to-echarts-studio",
   "private": true,
+  "version": "0.1.0",
   "type": "module",
-  "description": "Local-first desktop tool: drop a CSV/Excel file, configure a chart, export PNG/PDF. Data never leaves your machine.",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
@@ -15,36 +14,49 @@
     "dist": "pnpm run build && electron-builder"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/lint": "^6.8.5",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.8",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/vue-fontawesome": "^3.0.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "codemirror": "^6.0.2",
     "echarts": "^6.1.0",
-    "jspdf": "^4.2.1",
-    "vue": "^3.5.45",
+    "jspdf": "^4.0.0",
+    "lucide-vue-next": "^0.468.0",
+    "papaparse": "^5.5.3",
+    "radix-vue": "^1.9.17",
+    "tailwind-merge": "^2.5.5",
+    "vue": "^3.5.13",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.11",
-    "electron": "^45.4.1",
-    "electron-builder": "^26.18.0",
+    "@types/node": "^22.10.5",
+    "@types/papaparse": "^5.3.15",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "autoprefixer": "^10.4.20",
+    "electron": "^45.0.0",
+    "electron-builder": "^25.1.8",
+    "postcss": "^8.5.1",
+    "tailwindcss": "3.4.17",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
-    "vite": "^8.3.8",
-    "vue-tsc": "^3.3.14"
+    "vite": "^5.4.20",
+    "vue-tsc": "^2.2.0"
   },
   "build": {
-    "appId": "com.zengjianjin.local-to-echarts",
-    "productName": "local-to-echarts",
-    "directories": {
-      "output": "release"
-    },
+    "appId": "com.localtoecharts.studio",
+    "productName": "Local to ECharts Studio",
     "files": [
       "dist/**/*",
-      "electron/**/*",
-      "package.json"
+      "electron/**/*"
     ],
     "win": {
       "target": "nsis"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
     },
     "mac": {
       "target": "dmg"

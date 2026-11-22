@@ -1,0 +1,74 @@
+{
+  "formatVersion": 1,
+  "meta": {
+    "name": "月度销售趋势",
+    "updatedAt": "2026-11-22T00:00:00.000Z"
+  },
+  "option": {
+    "backgroundColor": "transparent",
+    "color": ["#4F8CFF", "#6C5CE7", "#22C55E", "#F59E0B"],
+    "title": {
+      "text": "月度销售趋势",
+      "subtext": "ECharts 标准 dataset 示例",
+      "left": "center",
+      "textStyle": { "fontSize": 20, "fontWeight": 600 }
+    },
+    "tooltip": {
+      "trigger": "axis",
+      "backgroundColor": "#111827",
+      "borderColor": "#4F8CFF",
+      "textStyle": { "color": "#F8FAFC" }
+    },
+    "legend": { "top": 54 },
+    "grid": { "show": false, "left": 48, "right": 28, "top": 90, "bottom": 44, "containLabel": true },
+    "dataset": [
+      {
+        "id": "workspace-dataset",
+        "sourceHeader": 1,
+        "source": [
+          ["月份", "销售额", "订单数"],
+          ["1月", 128.5, 342],
+          ["2月", 146.2, 389],
+          ["3月", 159.8, 412]
+        ]
+      }
+    ],
+    "xAxis": [{ "type": "category", "splitLine": { "show": false } }],
+    "yAxis": [{ "type": "value", "splitLine": { "show": false } }],
+    "series": [
+      {
+        "id": "workspace-series-1",
+        "name": "销售额",
+        "type": "bar",
+        "datasetIndex": 0,
+        "encode": { "x": 0, "y": [1] },
+        "itemStyle": { "borderRadius": [6, 6, 0, 0] },
+        "label": {
+          "show": true,
+          "position": "top",
+          "__templateFormatter": { "template": "{b}: {c}", "preset": "{b}: {c}" }
+        }
+      }
+    ],
+    "dataZoom": [{ "type": "inside" }],
+    "toolbox": {
+      "show": true,
+      "feature": {
+        "saveAsImage": { "show": true },
+        "dataView": { "show": true }
+      }
+    },
+    "animation": true
+  },
+  "table": {
+    "name": "sample.csv",
+    "columns": ["月份", "销售额", "订单数"],
+    "rows": [
+      ["1月", 128.5, 342],
+      ["2月", 146.2, 389],
+      ["3月", 159.8, 412]
+    ],
+    "inferredTypes": ["text", "number", "number"],
+    "rowCount": 3
+  }
+}

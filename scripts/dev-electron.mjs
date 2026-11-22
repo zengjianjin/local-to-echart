@@ -1,60 +1,69 @@
-// One-command Electron dev: start Vite on 1422, wait until it answers, then
-// open Electron pointed at it. Uses only Node built-ins + the electron package.
-// Port 1422 keeps this clear of the plain browser preview on 1420.
 import { spawn } from 'node:child_process'
-import electronPath from 'electron'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
-const PORT = 1422
-const URL = `http://localhost:${PORT}`
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const port = 1422
+const url = `http://localhost:${port}`
+const viteBin = path.join(root, 'node_modules/vite/bin/vite.js')
+const electronBin = path.join(
+  root,
+  'node_modules/electron/dist',
+  process.platform === 'win32' ? 'electron.exe' : 'electron',
+)
 
-const vite = spawn(process.execPath, [
-  'node_modules/vite/bin/vite.js',
-  '--port', String(PORT),
-  '--strictPort',
-], { stdio: 'inherit', shell: process.platform === 'win32' })
+function waitForServer(timeoutMs = 30000) {
+  const started = Date.now()
+  return new Promise((resolve, reject) => {
+    const tick = async () => {
+      try {
+        const response = await fetch(url)
+        if (response.ok) {
+          resolve()
+          return
+        }
+      } catch {
+        // Vite 尚未就绪，继续轮询。
+      }
+      if (Date.now() - started > timeoutMs) {
+        reject(new Error('Vite 开发服务器启动超时'))
+        return
+      }
+      setTimeout(tick, 300)
+    }
+    tick()
+  })
+}
+
+const vite = spawn(process.execPath, [viteBin, '--host', '0.0.0.0', '--port', String(port), '--strictPort'], {
+  cwd: root,
+  stdio: 'inherit',
+})
+
+const cleanEnv = { ...process.env, VLE_DEV_URL: url }
+delete cleanEnv.ELECTRON_RUN_AS_NODE
 
 let electron = null
 
-async function waitForServer(timeoutMs = 30000) {
-  const start = Date.now()
-  while (Date.now() - start < timeoutMs) {
-    try {
-      const res = await fetch(URL, { signal: AbortSignal.timeout(1000) })
-      if (res.ok) return true
-    } catch { /* not ready yet */ }
-    await new Promise((r) => setTimeout(r, 300))
-  }
-  return false
+async function start() {
+  await waitForServer()
+  electron = spawn(electronBin, [root], {
+    cwd: root,
+    env: cleanEnv,
+    stdio: 'inherit',
+  })
 }
 
-function shutdown(code = 0) {
+function shutdown() {
   if (electron && !electron.killed) electron.kill()
   if (!vite.killed) vite.kill()
-  process.exit(code)
+  process.exit(0)
 }
 
-process.on('SIGINT', () => shutdown(0))
-process.on('SIGTERM', () => shutdown(0))
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)
 
-vite.on('exit', (code) => {
-  if (code && code !== 0) shutdown(code)
+start().catch((error) => {
+  console.error('[dev-electron] 启动失败:', error)
+  shutdown()
 })
-
-const ready = await waitForServer()
-if (!ready) {
-  console.error(`[dev-electron] Vite did not start on ${URL}`)
-  shutdown(1)
-}
-
-// Some sandboxed/embedded shells preset ELECTRON_RUN_AS_NODE=1, which makes
-// electron.exe behave as plain node and breaks the main process. Drop it.
-const cleanEnv = { ...process.env, VLE_DEV_URL: URL }
-delete cleanEnv.ELECTRON_RUN_AS_NODE
-
-electron = spawn(electronPath, ['.'], {
-  stdio: 'inherit',
-  env: cleanEnv,
-  shell: process.platform === 'win32',
-})
-
-electron.on('exit', (code) => shutdown(code ?? 0))
