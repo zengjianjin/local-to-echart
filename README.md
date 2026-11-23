@@ -70,9 +70,10 @@ pnpm typecheck
 pnpm build
 pnpm dev:electron
 pnpm dist
+pnpm dist:win
 ```
 
-Browser dev server: `http://localhost:1420`. Electron dev mode uses port `1422` and passes it through `VLE_DEV_URL`. `pnpm dist` produces an installer in `release/` via electron-builder.
+Browser dev server: `http://localhost:1420`. Electron dev mode uses port `1422` and passes it through `VLE_DEV_URL`. `pnpm dist` produces an installer in `release/` via electron-builder; `pnpm dist:win` builds the Windows NSIS installer (`*.exe`) with one command. The first run downloads Electron and NSIS resources; the script uses the npmmirror mirrors by default and respects `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR` if you set them. Windows builds set `signAndEditExecutable: false` to skip exe resource editing, so no administrator rights (or Developer Mode) are needed for the winCodeSign archive; enable it back only if you need a custom icon or code signing. The NSIS installer lets you choose the install directory, and only built assets are bundled (no `node_modules`). Only the `en-US` and `zh-CN` Electron language packs are kept.
 
 ## Configuration format
 

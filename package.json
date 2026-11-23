@@ -30,7 +30,8 @@
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview",
     "electron": "electron .",
-    "dist": "pnpm run build && electron-builder"
+    "dist": "pnpm run build && electron-builder",
+    "dist:win": "node scripts/dist-win.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.8.1",
@@ -70,15 +71,23 @@
   "build": {
     "appId": "com.localtoecharts.studio",
     "productName": "Local to ECharts Studio",
+    "electronLanguages": ["en-US", "zh-CN"],
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "!node_modules/**/*"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
     },
     "mac": {
       "target": "dmg"

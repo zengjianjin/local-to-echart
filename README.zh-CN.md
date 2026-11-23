@@ -70,9 +70,10 @@ pnpm typecheck
 pnpm build
 pnpm dev:electron
 pnpm dist
+pnpm dist:win
 ```
 
-浏览器开发端口为 `1420`；Electron 开发模式使用 `1422`，并通过 `VLE_DEV_URL` 传给主进程。`pnpm dist` 使用 electron-builder 在 `release/` 目录生成安装包。
+浏览器开发端口为 `1420`；Electron 开发模式使用 `1422`，并通过 `VLE_DEV_URL` 传给主进程。`pnpm dist` 使用 electron-builder 在 `release/` 目录生成安装包；`pnpm dist:win` 一键生成 Windows NSIS 安装包（`*.exe`）。首次打包需要下载 Electron 与 NSIS 资源，脚本默认使用 npmmirror 镜像，也支持通过 `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR` 覆盖。Windows 构建设置了 `signAndEditExecutable: false`，跳过 exe 资源编辑，因此不需要管理员权限或开发者模式来解压 winCodeSign；只有需要自定义图标或代码签名时才应改回。NSIS 安装时可选择安装目录，打包内容只包含构建产物，不含 `node_modules`，并只保留 `en-US` 和 `zh-CN` 两种 Electron 语言包。
 
 ## 配置格式
 
