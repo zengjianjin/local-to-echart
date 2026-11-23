@@ -6,6 +6,24 @@
 >
 > 导入 CSV / TSV / Excel，用表单或 JSON 编辑任意 ECharts 字段，再导出图表或 option 本身。
 
+## 界面预览
+
+**三栏工作台：数据导入、实时预览、属性编辑一屏完成**
+
+![三栏工作台](docs/screenshots/setting.png)
+
+**JSON 模式：直接编辑完整 ECharts option，右侧实时预览**
+
+![JSON 编辑器](docs/screenshots/json-mode.png)
+
+**导出 PNG / SVG / PDF，可自定义分辨率**
+
+![导出选项](docs/screenshots/export-file.png)
+
+**浅色与深色主题**
+
+![深色主题](docs/screenshots/dark.png)
+
 一个本地优先的数据到图表工作台。左侧导入并预览表格数据，中间实时渲染 ECharts 图表，右侧提供完整的属性检查器：默认使用 schema 驱动的可视化表单，也可切换到 JSON 直接编辑任意 ECharts 字段。
 
 ## 核心能力
@@ -19,7 +37,7 @@
 - 使用可序列化的模板描述表达 `formatter`，不执行任意 JavaScript。
 - 导出 PNG、SVG、PDF 与 JSON 项目文件，支持自定义导出分辨率。
 - 表单、JSON 与渲染使用同一份配置；表单不会伪造 option 中未设置的默认值。
-- 浅色（默认）与深色主题切换，界面配色不影响图片导出的深色背景。
+- 浅色（默认）与深色主题切换；图片导出使用 option 中的 `backgroundColor`（默认白底），不受界面主题影响。
 - 支持浏览器和 Electron 桌面运行。
 
 ## 为什么选择本项目

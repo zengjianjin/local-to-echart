@@ -6,6 +6,24 @@
 >
 > Import CSV / TSV / Excel, edit every ECharts field visually or as JSON, then export charts or the option itself.
 
+## Screenshots
+
+**Three-panel workbench — import, preview, and edit in one place**
+
+![Three-panel workbench](docs/screenshots/setting.png)
+
+**JSON mode — edit the complete ECharts option with a live preview**
+
+![JSON option editor](docs/screenshots/json-mode.png)
+
+**Export PNG / SVG / PDF at the resolution you need**
+
+![Export panel](docs/screenshots/export-file.png)
+
+**Light and dark themes**
+
+![Dark theme](docs/screenshots/dark.png)
+
 A local-first workbench for turning tabular data into ECharts charts. The right panel is a full option inspector: schema-driven visual forms for everyday editing plus a JSON editor for every ECharts field, including unknown and future fields.
 
 ## Features
@@ -19,7 +37,7 @@ A local-first workbench for turning tabular data into ECharts charts. The right 
 - Convert safe formatter templates into runtime callbacks without executing arbitrary code.
 - Export PNG, SVG, PDF, and JSON project files with selectable export resolution.
 - Keep form, JSON, and rendered chart in sync; unset fields are never replaced with fabricated defaults.
-- Switch between light (default) and dark UI themes; exports always use a dark background.
+- Switch between light (default) and dark UI themes; image exports use the option's `backgroundColor` (white by default).
 - Run in a browser or as an Electron desktop app.
 
 ## Why Local to ECharts Studio
