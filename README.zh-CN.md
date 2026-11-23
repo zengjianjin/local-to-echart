@@ -4,7 +4,7 @@
 
 > **本地优先的 ECharts Studio——数据不出本机，导出的是可直接复用的标准 ECharts option。**
 >
-> 导入 CSV / TSV / Excel，用表单或 JSON 编辑任意 ECharts 字段，再导出图表或 option 本身。
+> 导入 CSV / TSV / JSON / JSON Lines / Markdown 表格 / Excel，或直接粘贴表格内容，用表单或 JSON 编辑任意 ECharts 字段，再导出图表或 option 本身。
 
 ## 界面预览
 
@@ -28,8 +28,9 @@
 
 ## 核心能力
 
-- 在浏览器进程内解析 CSV、TSV 与 Excel 文件，数据不上传。
-- Excel 可指定表头行（1–20），兼容两行表头；合并分组名会拼到字段名前缀，重名自动去重。
+- 在浏览器进程内解析 CSV、TSV、JSON、JSON Lines、Markdown 表格与 Excel 文件，数据不上传。
+- 支持从剪贴板粘贴 CSV / TSV / JSON / JSONL / Markdown 表格，自动识别格式。
+- CSV / TSV / Excel 可指定表头行（1–20），兼容两行表头；分组名会拼到字段名前缀，重名自动去重。
 - 速览表头、字段类型与前 12 行数据，并可打开全量预览弹窗查看所有行。
 - 将表格写入标准 ECharts `dataset.source`，通过 `series.encode` 完成字段映射。
 - 每个 X 轴独立选择类目字段，切换字段只更新系列映射，不重建整份数据。
@@ -87,7 +88,7 @@ pnpm dist:win
 
 - [使用指南](docs/getting-started.md)：安装启动、数据导入、界面操作、导出与主题切换的完整入门流程。
 - [全属性编辑器](docs/option-editor.md)：表单/JSON 双模式与字段类型说明。
-- [数据绑定](docs/data-binding.md)：CSV/TSV/Excel 解析与 `dataset` / `encode` 映射。
+- [数据绑定](docs/data-binding.md)：支持格式的解析规则、表头行与 `dataset` / `encode` 映射。
 - [架构](docs/architecture.md)：状态模型与运行时数据流。
 - [验收清单](docs/qa-checklist.md)：功能验收与回归项。
 

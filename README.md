@@ -4,7 +4,7 @@
 
 > **Local-first ECharts Studio — your data never leaves your machine, and what you export is a standard, reusable ECharts option.**
 >
-> Import CSV / TSV / Excel, edit every ECharts field visually or as JSON, then export charts or the option itself.
+> Import CSV / TSV / JSON / JSON Lines / Markdown tables / Excel, or paste tabular data, edit every ECharts field visually or as JSON, then export charts or the option itself.
 
 ## Screenshots
 
@@ -28,8 +28,9 @@ A local-first workbench for turning tabular data into ECharts charts. The right 
 
 ## Features
 
-- Import CSV, TSV, and Excel files entirely in the browser process.
-- Choose the Excel header row (1–20) for two-row or grouped headers; merged group labels are prefixed to field names and duplicates are deduplicated.
+- Import CSV, TSV, JSON, JSON Lines, Markdown tables, and Excel files entirely in the browser process.
+- Paste CSV / TSV / JSON / JSONL / Markdown tables from the clipboard with automatic format detection.
+- Choose the header row (1–20) for CSV / TSV / Excel to handle two-row or grouped headers; group labels are prefixed to field names and duplicates are deduplicated.
 - Preview headers, inferred field types, and the first 12 rows, with a full-data dialog for every row.
 - Write imported tables into standard ECharts `dataset.source`; map fields with `series.encode`.
 - Select the category field independently for each X axis; switching fields only updates series mappings without rebuilding the dataset.
@@ -87,7 +88,7 @@ Project files use `formatVersion: 1` and contain `meta`, `option`, and an option
 
 - [Getting started](docs/getting-started.md) (Chinese): install, import, edit, export, and theme switching.
 - [Option editor](docs/option-editor.md): form/JSON modes and field types.
-- [Data binding](docs/data-binding.md): CSV/TSV/Excel parsing and `dataset` / `encode` mapping.
+- [Data binding](docs/data-binding.md): supported formats, header rows, and `dataset` / `encode` mapping.
 - [Architecture](docs/architecture.md): state model and runtime data flow.
 - [QA checklist](docs/qa-checklist.md): feature verification list.
 
