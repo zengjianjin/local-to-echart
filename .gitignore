@@ -11,3 +11,4 @@ release-v2/
 *.csv
 *.xlsx
 *.xls
+.playwright-cli/

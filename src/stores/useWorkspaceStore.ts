@@ -514,9 +514,16 @@ function syncSeriesNameFields() {
         datasetIndex,
         encode: { x: 0, y: [index + 1] },
       }
-      if (stackMode !== 'none') item.stack = `${GROUPED_STACK}-${groupIndex}`
-      if (stackMode === 'samesign' || stackMode === 'all') item.stackStrategy = stackMode
       Object.assign(item, currentSeriesGroupDefaults(groupIndex))
+      // 堆叠由分组配置统一管理，必须在 defaults 之后写入，避免旧默认值残留导致切换不生效
+      if (stackMode === 'none') {
+        delete item.stack
+        delete item.stackStrategy
+      } else {
+        item.stack = `${GROUPED_STACK}-${groupIndex}`
+        if (stackMode === 'samesign' || stackMode === 'all') item.stackStrategy = stackMode
+        else delete item.stackStrategy
+      }
       seriesList.push(item)
     })
   })

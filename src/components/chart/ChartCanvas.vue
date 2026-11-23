@@ -15,7 +15,7 @@ function render(option: echarts.EChartsOption) {
   if (renderFrame) cancelAnimationFrame(renderFrame)
   renderFrame = requestAnimationFrame(() => {
     renderFrame = 0
-    chart?.setOption(option, { replaceMerge: ['series', 'dataset'], lazyUpdate: true, silent: true })
+    chart?.setOption(option, { notMerge: true, lazyUpdate: true, silent: true })
   })
 }
 
