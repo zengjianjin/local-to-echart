@@ -12,24 +12,18 @@ export function detectDelimiter(text: string): string {
   }, { delimiter: ',', count: 1 }).delimiter
 }
 
-function normalize(rows: unknown[][]): Array<Array<string | number | boolean | null>> {
-  if (!rows.length) return []
-  const width = Math.max(...rows.map((row) => row.length))
-  const columns = rows[0].map((cell, index) => String(cell ?? '').trim() || `字段 ${index + 1}`)
-  while (columns.length < width) columns.push(`字段 ${columns.length + 1}`)
-  const body = rows.slice(1).map((row) =>
-    Array.from({ length: width }, (_, index) => {
-      const value = row[index]
-      if (value === undefined || value === null || value === '') return null
-      if (typeof value === 'number' || typeof value === 'boolean') return value
-      const numeric = toNumber(value)
-      return numeric === null ? String(value) : numeric
-    }),
-  )
-  return [columns, ...body]
+function normalizeHeaderRow(value: number): number {
+  return Math.min(20, Math.max(1, Math.floor(Number(value) || 1)))
 }
 
-export function parseCsvText(text: string, name = 'pasted.csv'): TableData {
+function toCellValue(value: unknown): string | number | boolean | null {
+  if (value === undefined || value === null || value === '') return null
+  if (typeof value === 'number' || typeof value === 'boolean') return value
+  const numeric = toNumber(value)
+  return numeric === null ? String(value) : numeric
+}
+
+export function parseCsvText(text: string, name = 'pasted.csv', headerRow = 1): TableData {
   const delimiter = detectDelimiter(text)
   let rawRows: unknown[][] = []
   Papa.parse<unknown[]>(text, {
@@ -39,9 +33,24 @@ export function parseCsvText(text: string, name = 'pasted.csv'): TableData {
       rawRows = result.data as unknown[][]
     },
   })
-  const normalized = normalize(rawRows)
-  const columns = (normalized[0] ?? []).map((cell) => String(cell ?? ''))
-  const body = normalized.slice(1)
+  if (!rawRows.length) throw new Error('CSV 中没有可读取的数据')
+
+  const headerIndex = normalizeHeaderRow(headerRow) - 1
+  if (headerIndex >= rawRows.length) throw new Error('表头行超出数据范围')
+  const headerCells = rawRows[headerIndex] ?? []
+  const width = Math.max(...rawRows.map((row) => row.length), headerCells.length)
+  const usedNames = new Map<string, number>()
+  const columns = Array.from({ length: width }, (_, index) => {
+    let base = String(headerCells[index] ?? '').trim() || `字段 ${index + 1}`
+    const group = String(rawRows[headerIndex - 1]?.[index] ?? '').trim()
+    if (group && group !== base) base = `${group} / ${base}`
+    const count = (usedNames.get(base) ?? 0) + 1
+    usedNames.set(base, count)
+    return count > 1 ? `${base} (${count})` : base
+  })
+  const body = rawRows.slice(headerIndex + 1).map((row) =>
+    Array.from({ length: width }, (_, index) => toCellValue(row[index])),
+  )
   const inferredTypes = columns.map((_, index) => inferTypeFromValues(body.map((row) => row[index] ?? null)))
   const rows = body.map((row) =>
     row.map((cell, index) => {

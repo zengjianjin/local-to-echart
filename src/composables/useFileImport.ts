@@ -1,6 +1,7 @@
 import { ref, shallowRef } from 'vue'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
-import { isExcelFile, parseDataFile } from '@/utils/fileParse'
+import { isExcelFile, isSupportedFile, parseTextFile } from '@/utils/fileParse'
+import { parseClipboardText } from '@/utils/tableFormats'
 import { getExcelSheetInfo, parseExcelBuffer } from '@/utils/excel'
 import { loadDemoTable } from '@/utils/demoData'
 import { logError } from '@/utils/logger'
@@ -16,6 +17,7 @@ export const selectedSheet = ref('')
 export const headerRow = ref(1)
 export const isDragging = ref(false)
 const lastExcelFile = shallowRef<{ fileName: string; buffer: ArrayBuffer } | null>(null)
+const lastCsvFile = shallowRef<{ fileName: string; text: string } | null>(null)
 
 const { state, applyTable } = useWorkspaceStore()
 
@@ -40,12 +42,15 @@ export function confirmSheetImport() {
 
 export function setHeaderRow(value: number) {
   headerRow.value = Math.min(20, Math.max(1, Math.floor(Number(value) || 1)))
-  const last = lastExcelFile.value
-  if (!last || pendingWorkbook.value) return
+  if (pendingWorkbook.value) return
+  const excel = lastExcelFile.value
+  const csv = lastCsvFile.value
+  if (!excel && !csv) return
   state.ui.isImporting = true
   state.ui.errorMessage = ''
   try {
-    applyExcel(last.fileName, last.buffer)
+    if (excel) applyExcel(excel.fileName, excel.buffer)
+    else if (csv) applyTable(parseTextFile(csv.text, csv.fileName, undefined, headerRow.value))
   } catch (error) {
     state.ui.errorMessage = logError('fileImport', error)
   } finally {
@@ -59,9 +64,9 @@ export function cancelSheetImport() {
 
 export async function importFiles(files: FileList | File[]) {
   const list = Array.from(files)
-  const file = list.find((item) => /\.(csv|tsv|txt|xlsx|xlsm|xls)$/i.test(item.name))
+  const file = list.find(isSupportedFile)
   if (!file) {
-    state.ui.errorMessage = '请选择 CSV、TSV 或 Excel 文件'
+    state.ui.errorMessage = '请选择 CSV、TSV、JSON、JSON Lines、Markdown 表格或 Excel 文件'
     return
   }
   state.ui.isImporting = true
@@ -69,6 +74,7 @@ export async function importFiles(files: FileList | File[]) {
   try {
     if (isExcelFile(file)) {
       const buffer = await file.arrayBuffer()
+      lastCsvFile.value = null
       lastExcelFile.value = { fileName: file.name, buffer }
       const sheets = getExcelSheetInfo(buffer, headerRow.value)
       if (sheets.length > 1) {
@@ -78,7 +84,10 @@ export async function importFiles(files: FileList | File[]) {
       }
       applyExcel(file.name, buffer)
     } else {
-      applyTable(await parseDataFile(file))
+      const text = await file.text()
+      lastCsvFile.value = { fileName: file.name, text }
+      lastExcelFile.value = null
+      applyTable(parseTextFile(text, file.name, undefined, headerRow.value))
     }
   } catch (error) {
     state.ui.errorMessage = logError('fileImport', error)
@@ -98,6 +107,22 @@ function onFileChange(event: Event) {
   input.value = ''
 }
 
+export async function pasteFromClipboard() {
+  state.ui.isImporting = true
+  state.ui.errorMessage = ''
+  try {
+    const text = await navigator.clipboard.readText()
+    const table = parseClipboardText(text)
+    lastCsvFile.value = null
+    lastExcelFile.value = null
+    applyTable(table)
+  } catch (error) {
+    state.ui.errorMessage = logError('clipboardImport', error)
+  } finally {
+    state.ui.isImporting = false
+  }
+}
+
 function loadDemo() {
   state.ui.errorMessage = ''
   try {
@@ -112,6 +137,7 @@ export function useFileImport() {
     isDragging,
     onFileChange,
     onDrop,
+    pasteFromClipboard,
     loadDemo,
     importFiles,
     confirmSheetImport,

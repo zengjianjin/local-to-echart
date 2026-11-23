@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { RotateCcw } from 'lucide-vue-next'
 import type { FieldSchema, FormatterDescriptor, SerializableNode } from '@/types'
 import FieldLabel from '@/components/ui/FieldLabel.vue'
@@ -175,6 +175,62 @@ function childBasePath(child: FieldSchema): string | undefined {
 }
 
 const colorValue = computed(() => (/^#[0-9a-fA-F]{6}$/.test(stringValue.value) ? stringValue.value : '#4F8CFF'))
+
+const colorDraft = ref(colorValue.value)
+const colorTextDraft = ref(stringValue.value)
+let colorTimer: ReturnType<typeof setTimeout> | null = null
+
+watch([colorValue, stringValue], ([value, text]) => {
+  if (colorTimer) return
+  colorDraft.value = value
+  colorTextDraft.value = text
+})
+
+function flushColor() {
+  if (colorTimer) clearTimeout(colorTimer)
+  colorTimer = null
+  const next = colorDraft.value
+  if (next !== stringValue.value) update(next)
+}
+
+function queueColorValue(value: string) {
+  colorDraft.value = value
+  colorTextDraft.value = value
+  if (colorTimer) clearTimeout(colorTimer)
+  colorTimer = setTimeout(flushColor, 120)
+}
+
+function queueColorText(value: string) {
+  colorTextDraft.value = value
+  if (/^#[0-9a-fA-F]{6}$/.test(value)) colorDraft.value = value
+  if (colorTimer) clearTimeout(colorTimer)
+  if (value === '') {
+    colorTimer = setTimeout(() => {
+      colorTimer = null
+      reset()
+    }, 120)
+    return
+  }
+  colorTimer = setTimeout(() => {
+    colorTimer = null
+    update(value)
+  }, 120)
+}
+
+function onColorTextBlur() {
+  if (!colorTimer) return
+  clearTimeout(colorTimer)
+  colorTimer = null
+  if (colorTextDraft.value === '') reset()
+  else update(colorTextDraft.value)
+}
+
+onBeforeUnmount(() => {
+  if (colorTimer) {
+    clearTimeout(colorTimer)
+    flushColor()
+  }
+})
 </script>
 
 <template>
@@ -223,11 +279,17 @@ const colorValue = computed(() => (/^#[0-9a-fA-F]{6}$/.test(stringValue.value) ?
     <div v-else-if="field.kind === 'color'" class="flex items-center gap-2">
       <input
         type="color"
-        :value="colorValue"
+        :value="colorDraft"
         class="h-8 w-9 shrink-0 cursor-pointer rounded-lg border border-white/10 bg-transparent p-0.5"
-        @input="update(($event.target as HTMLInputElement).value)"
+        @input="queueColorValue(($event.target as HTMLInputElement).value)"
+        @change="flushColor"
       />
-      <Input :model-value="stringValue" placeholder="未设置（自动）" @update:model-value="updateText" />
+      <Input
+        :model-value="colorTextDraft"
+        placeholder="未设置（自动）"
+        @update:model-value="queueColorText"
+        @blur="onColorTextBlur"
+      />
     </div>
 
     <div v-else-if="field.kind === 'template'" class="space-y-2">

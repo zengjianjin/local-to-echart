@@ -97,7 +97,7 @@ function onChartDragLeave(event: globalThis.DragEvent) {
               <UploadCloud :size="28" />
             </div>
             <div class="text-[15px] font-semibold text-ink-50">松手即可导入表格</div>
-            <div class="text-[11px] text-ink-400">支持 CSV / TSV / Excel · 数据仅在本机处理，不上传</div>
+            <div class="text-[11px] text-ink-400">支持 CSV / JSON / JSONL / Markdown / Excel · 数据仅在本机处理，不上传</div>
           </div>
         </div>
       </section>

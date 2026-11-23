@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
-import { FileSpreadsheet, UploadCloud, Sparkles, AlertCircle, Loader2 } from 'lucide-vue-next'
+import { ClipboardPaste, FileSpreadsheet, UploadCloud, Sparkles, AlertCircle, Loader2 } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import Badge from '@/components/ui/Badge.vue'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { useFileImport } from '@/composables/useFileImport'
+import { FILE_ACCEPT } from '@/utils/fileParse'
 import DataTablePreview from './DataTablePreview.vue'
 import DatasetActions from './DatasetActions.vue'
 
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 const { state } = useWorkspaceStore()
-const { isDragging, onFileChange, onDrop, loadDemo, headerRow, setHeaderRow } = useFileImport()
+const { isDragging, onFileChange, onDrop, pasteFromClipboard, loadDemo, headerRow, setHeaderRow } = useFileImport()
 
 function onHeaderRowChange(event: Event) {
   setHeaderRow(Number((event.target as HTMLInputElement).value))
@@ -26,7 +27,7 @@ function onHeaderRowChange(event: Event) {
         </div>
         <div>
           <div class="text-[12px] font-semibold text-ink-50">数据源</div>
-          <div class="text-[9px] text-ink-500">CSV / TSV / Excel</div>
+          <div class="text-[9px] text-ink-500">CSV / JSON / Excel / 粘贴</div>
         </div>
       </div>
       <Badge :variant="state.table ? 'success' : 'neutral'">
@@ -34,7 +35,7 @@ function onHeaderRowChange(event: Event) {
       </Badge>
     </div>
 
-    <input ref="fileInput" type="file" accept=".csv,.tsv,.txt,.xlsx,.xlsm,.xls" class="hidden" @change="onFileChange" />
+    <input ref="fileInput" type="file" :accept="FILE_ACCEPT" class="hidden" @change="onFileChange" />
 
     <button
       type="button"
@@ -59,7 +60,7 @@ function onHeaderRowChange(event: Event) {
           <div class="text-[11px] font-medium text-ink-100">
             {{ state.ui.isImporting ? '正在解析文件…' : '拖放文件到这里' }}
           </div>
-          <div class="mt-1 text-[10px] leading-relaxed text-ink-500">或点击选择本地表格文件，数据仅在浏览器内处理。</div>
+          <div class="mt-1 text-[10px] leading-relaxed text-ink-500">CSV / TSV / JSON / JSONL / Markdown / Excel，数据仅在浏览器内处理。</div>
         </div>
       </div>
     </button>
@@ -68,13 +69,16 @@ function onHeaderRowChange(event: Event) {
       <Button size="sm" variant="soft" class="flex-1" @click="fileInput?.click()">
         <UploadCloud :size="12" /> 选择文件
       </Button>
+      <Button size="sm" variant="soft" class="flex-1" title="从剪贴板读取 CSV / JSON / Markdown 表格" @click="pasteFromClipboard">
+        <ClipboardPaste :size="12" /> 粘贴
+      </Button>
       <Button size="sm" class="flex-1" @click="loadDemo">
         <Sparkles :size="12" /> 示例数据
       </Button>
     </div>
 
     <div class="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-2.5 py-2">
-      <span class="shrink-0 text-[10px] text-ink-500">Excel 表头行</span>
+      <span class="shrink-0 text-[10px] text-ink-500">表头行</span>
       <input
         type="number"
         min="1"
