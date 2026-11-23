@@ -8,6 +8,16 @@ const { state, runtimeOption, setChartInstance } = useWorkspaceStore()
 const host = ref<HTMLDivElement | null>(null)
 let chart: echarts.ECharts | null = null
 let observer: ResizeObserver | null = null
+let renderFrame = 0
+
+function render(option: echarts.EChartsOption) {
+  if (!chart) return
+  if (renderFrame) cancelAnimationFrame(renderFrame)
+  renderFrame = requestAnimationFrame(() => {
+    renderFrame = 0
+    chart?.setOption(option, { replaceMerge: ['series', 'dataset'], lazyUpdate: true, silent: true })
+  })
+}
 
 function resize() {
   chart?.resize()
@@ -17,17 +27,19 @@ onMounted(() => {
   if (!host.value) return
   chart = echarts.init(host.value)
   setChartInstance(chart)
-  chart.setOption(runtimeOption.value, { notMerge: true, lazyUpdate: true })
+  chart.setOption(runtimeOption.value, { notMerge: true, lazyUpdate: true, silent: true })
   observer = new ResizeObserver(resize)
   observer.observe(host.value)
   window.addEventListener('resize', resize)
 })
 
 watch(runtimeOption, (option) => {
-  chart?.setOption(option, { notMerge: true, lazyUpdate: true })
+  render(option as echarts.EChartsOption)
 })
 
 onBeforeUnmount(() => {
+  if (renderFrame) cancelAnimationFrame(renderFrame)
+  renderFrame = 0
   observer?.disconnect()
   observer = null
   window.removeEventListener('resize', resize)

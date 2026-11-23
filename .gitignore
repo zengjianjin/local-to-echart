@@ -8,3 +8,6 @@ release-v2/
 .idea/
 .vscode/
 .codebuddy
+*.csv
+*.xlsx
+*.xls

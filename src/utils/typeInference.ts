@@ -1,4 +1,5 @@
 import type { InferredFieldType } from '@/types'
+import { toNumber } from './numberParse'
 
 export function inferTypeFromValues(values: Array<string | number | boolean | null>): InferredFieldType {
   const present = values.filter((value) => value !== null && value !== '')
@@ -6,7 +7,7 @@ export function inferTypeFromValues(values: Array<string | number | boolean | nu
   if (present.every((value) => typeof value === 'boolean')) return 'boolean'
   if (
     present.every(
-      (value) => typeof value === 'number' || /^-?\d+(?:\.\d+)?$/.test(String(value).trim()),
+      (value) => typeof value === 'number' || toNumber(value) !== null,
     )
   ) {
     return 'number'

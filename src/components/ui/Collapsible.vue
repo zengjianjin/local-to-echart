@@ -4,8 +4,8 @@ import { ChevronDown } from 'lucide-vue-next'
 import { cn } from '@/utils/cn'
 
 const props = withDefaults(
-  defineProps<{ title: string; open?: boolean; count?: number; description?: string }>(),
-  { open: true },
+  defineProps<{ title: string; open?: boolean; count?: number; description?: string; allowSticky?: boolean }>(),
+  { open: true, allowSticky: false },
 )
 const emit = defineEmits<{ (event: 'update:open', value: boolean): void }>()
 const expanded = ref(props.open)
@@ -31,7 +31,7 @@ function onKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <section class="overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.025]">
+  <section :class="cn('rounded-xl border border-white/[0.08] bg-white/[0.025]', !props.allowSticky && 'overflow-hidden')">
     <div
       role="button"
       tabindex="0"

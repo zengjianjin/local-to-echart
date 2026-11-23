@@ -1,6 +1,7 @@
 import Papa from 'papaparse'
 import type { TableData } from '@/types'
 import { inferTypeFromValues } from './typeInference'
+import { toNumber } from './numberParse'
 
 export function detectDelimiter(text: string): string {
   const line = text.split(/\r?\n/).find((item) => item.trim()) ?? ''
@@ -21,7 +22,8 @@ function normalize(rows: unknown[][]): Array<Array<string | number | boolean | n
       const value = row[index]
       if (value === undefined || value === null || value === '') return null
       if (typeof value === 'number' || typeof value === 'boolean') return value
-      return String(value)
+      const numeric = toNumber(value)
+      return numeric === null ? String(value) : numeric
     }),
   )
   return [columns, ...body]

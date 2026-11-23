@@ -10,7 +10,11 @@ import DatasetActions from './DatasetActions.vue'
 
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
 const { state } = useWorkspaceStore()
-const { isDragging, onFileChange, onDrop, loadDemo } = useFileImport()
+const { isDragging, onFileChange, onDrop, loadDemo, headerRow, setHeaderRow } = useFileImport()
+
+function onHeaderRowChange(event: Event) {
+  setHeaderRow(Number((event.target as HTMLInputElement).value))
+}
 </script>
 
 <template>
@@ -67,6 +71,19 @@ const { isDragging, onFileChange, onDrop, loadDemo } = useFileImport()
       <Button size="sm" class="flex-1" @click="loadDemo">
         <Sparkles :size="12" /> 示例数据
       </Button>
+    </div>
+
+    <div class="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-2.5 py-2">
+      <span class="shrink-0 text-[10px] text-ink-500">Excel 表头行</span>
+      <input
+        type="number"
+        min="1"
+        max="20"
+        :value="headerRow"
+        class="h-6 w-12 rounded border border-white/10 bg-ink-950/60 px-1 text-center text-[11px] text-ink-100 outline-none focus:border-primary/50"
+        @change="onHeaderRowChange"
+      />
+      <span class="text-[9px] leading-tight text-ink-500">两行表头填 2，改完立即重新解析</span>
     </div>
 
     <div

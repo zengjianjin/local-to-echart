@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Database, Moon, PanelLeftClose, PanelLeftOpen, SlidersHorizontal, Sun } from 'lucide-vue-next'
+import { Database, Moon, PanelLeftClose, PanelLeftOpen, SlidersHorizontal, Sun, UploadCloud } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import DataImportPanel from '@/components/data/DataImportPanel.vue'
 import DataPreviewDialog from '@/components/data/DataPreviewDialog.vue'
@@ -8,8 +8,16 @@ import ChartCanvas from '@/components/chart/ChartCanvas.vue'
 import ChartToolbar from '@/components/chart/ChartToolbar.vue'
 import OptionPanel from '@/components/settings/OptionPanel.vue'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
+import { isDragging, onDrop } from '@/composables/useFileImport'
 
 const { state, toggleTheme } = useWorkspaceStore()
+
+function onChartDragLeave(event: globalThis.DragEvent) {
+  const next = event.relatedTarget as Node | null
+  const section = (event.currentTarget as HTMLElement)
+  if (next && section.contains(next)) return
+  isDragging.value = false
+}
 </script>
 
 <template>
@@ -65,16 +73,32 @@ const { state, toggleTheme } = useWorkspaceStore()
         <span class="text-[10px] [writing-mode:vertical-rl]">数据</span>
       </button>
 
-      <section class="flex min-w-0 flex-1 flex-col">
+      <section
+        class="relative flex min-w-0 flex-1 flex-col"
+        @dragenter.prevent="isDragging = true"
+        @dragover.prevent="isDragging = true"
+        @dragleave.prevent="onChartDragLeave"
+        @drop.prevent="onDrop"
+      >
         <ChartToolbar />
         <div class="min-h-0 flex-1 p-4">
           <ChartCanvas />
         </div>
-        <div class="flex h-8 shrink-0 items-center gap-3 border-t border-white/[0.06] px-4 text-[10px] text-ink-600">
-          <span>Option 即唯一配置来源</span>
-          <span class="h-3 w-px bg-white/10" />
-          <span>schema 负责可视化，JSON 保留完整能力</span>
-          <span class="ml-auto font-mono">{{ state.ui.selectedPath || '未选择字段' }}</span>
+        <div class="flex h-8 shrink-0 items-center gap-3 overflow-hidden whitespace-nowrap border-t border-white/[0.06] px-4 text-[10px] text-ink-600">
+          <span>本地处理 · 数据不上传</span>
+          <span class="ml-auto min-w-0 truncate font-mono" title="当前选中的字段路径">{{ state.ui.selectedPath || '未选择字段' }}</span>
+        </div>
+        <div
+          v-if="isDragging"
+          class="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-ink-950/80 backdrop-blur-sm"
+        >
+          <div class="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-primary/70 bg-ink-900/80 px-12 py-10 text-center shadow-glow">
+            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+              <UploadCloud :size="28" />
+            </div>
+            <div class="text-[15px] font-semibold text-ink-50">松手即可导入表格</div>
+            <div class="text-[11px] text-ink-400">支持 CSV / TSV / Excel · 数据仅在本机处理，不上传</div>
+          </div>
         </div>
       </section>
 

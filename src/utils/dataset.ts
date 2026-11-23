@@ -26,6 +26,7 @@ export function applyTableToOption(
   table: TableData,
   option: SerializableEchartsOption,
   xFields: number[] = [0],
+  preferredValueField?: number,
 ): SerializableEchartsOption {
   const next = cloneSerializableOption(option)
   const source = tableToSource(table)
@@ -56,14 +57,21 @@ export function applyTableToOption(
     .map((item) => item.index)
   const finalValueIndexes = valueIndexes.length ? valueIndexes : (table.columns.length > 1 ? [1] : [])
   const xIndex = xFields[0] ?? 0
+  const valueIndex = preferredValueField !== undefined
+    && preferredValueField >= 0
+    && preferredValueField < table.columns.length
+    ? preferredValueField
+    : (finalValueIndexes[0] ?? (table.columns.length > 1 ? 1 : -1))
 
-  const autoSeries = finalValueIndexes.map((valueIndex) => ({
-    id: `workspace-series-${valueIndex}`,
-    name: table.columns[valueIndex],
-    type: 'bar',
-    xAxisIndex: 0,
-    encode: { x: xIndex, y: [valueIndex] },
-  }))
+  const autoSeries = valueIndex >= 0
+    ? [{
+        id: `workspace-series-${valueIndex}`,
+        name: table.columns[valueIndex],
+        type: 'bar',
+        xAxisIndex: 0,
+        encode: { x: xIndex, y: [valueIndex] },
+      }]
+    : []
   next.series = [...customSeries, ...autoSeries]
   return next
 }

@@ -2,7 +2,18 @@
 import { onBeforeUnmount, onMounted } from 'vue'
 import { FileSpreadsheet, X } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
-import { cancelSheetImport, confirmSheetImport, pendingWorkbook, selectedSheet } from '@/composables/useFileImport'
+import {
+  cancelSheetImport,
+  confirmSheetImport,
+  headerRow,
+  pendingWorkbook,
+  selectedSheet,
+  setHeaderRow,
+} from '@/composables/useFileImport'
+
+function onHeaderRowChange(event: Event) {
+  setHeaderRow(Number((event.target as HTMLInputElement).value))
+}
 
 function onKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape' && pendingWorkbook.value) cancelSheetImport()
@@ -58,6 +69,19 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             <span class="min-w-0 flex-1 truncate text-[12px] text-ink-50">{{ sheet.name }}</span>
             <span class="shrink-0 font-mono text-[10px] text-ink-500">{{ sheet.rowCount }} 行</span>
           </button>
+        </div>
+
+        <div class="flex items-center gap-2 border-t border-white/[0.08] px-4 py-2">
+          <span class="shrink-0 text-[10px] text-ink-500">表头行</span>
+          <input
+            type="number"
+            min="1"
+            max="20"
+            :value="headerRow"
+            class="h-6 w-12 rounded border border-white/10 bg-ink-950/60 px-1 text-center text-[11px] text-ink-100 outline-none focus:border-primary/50"
+            @change="onHeaderRowChange"
+          />
+          <span class="text-[10px] text-ink-500">从该行读取字段名，上方合并行只用于拼接分组名</span>
         </div>
 
         <div class="flex items-center justify-end gap-2 border-t border-white/[0.08] px-4 py-3">

@@ -11,6 +11,7 @@ import { useOptionEditor } from '@/composables/useOptionEditor'
 import { cn } from '@/utils/cn'
 import FormEditor from './FormEditor.vue'
 import XAxisFieldMapper from './XAxisFieldMapper.vue'
+import SeriesGroupsEditor from './SeriesGroupsEditor.vue'
 import JsonEditor from './JsonEditor.vue'
 import SectionNav from './SectionNav.vue'
 import UnknownFieldsPanel from './UnknownFieldsPanel.vue'
@@ -126,6 +127,7 @@ watch(sections, (value) => {
       <div :class="state.ui.editorMode === 'json' ? 'min-h-0 flex-1 p-2' : 'min-h-0 flex-1 p-3'">
         <ScrollArea v-if="state.ui.editorMode === 'form'">
           <XAxisFieldMapper v-if="activeSection?.id === 'xAxis'" />
+          <SeriesGroupsEditor v-if="activeSection?.id === 'series'" />
           <FormEditor v-if="activeSection && activeSection.id !== 'unknown'" :section="activeSection" />
           <UnknownFieldsPanel v-else />
         </ScrollArea>

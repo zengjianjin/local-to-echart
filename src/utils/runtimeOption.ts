@@ -1,3 +1,4 @@
+import { toRaw } from 'vue'
 import type { FormatterDescriptor, SerializableNode } from '@/types'
 import { keepNonCartesianSeries } from './seriesKind'
 
@@ -56,8 +57,26 @@ function materializeNode(node: SerializableNode): unknown {
   return node
 }
 
+export function materializeDataset(node: SerializableNode): SerializableNode {
+  if (!Array.isArray(node)) return node
+  const raw = toRaw(node) as SerializableNode[]
+  return node.map((item, index) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return raw[index]
+    const record = item as Record<string, SerializableNode>
+    const source = record.source
+    const copy = { ...(toRaw(item) as Record<string, SerializableNode>) }
+    if (Array.isArray(source)) copy.source = toRaw(source)
+    return copy
+  })
+}
+
 export function materializeRuntimeOption(option: Record<string, SerializableNode>): RuntimeOption {
-  const result = materializeNode(option) as RuntimeOption
+  const result: RuntimeOption = {}
+  for (const key of Object.keys(option)) {
+    // dataset 是大数组（可能数万单元格），只读取到 source 引用这一层：
+    // 保留「source 被替换」的响应式依赖，但不逐个遍历单元格，也不把 Vue proxy 交给 ECharts。
+    result[key] = key === 'dataset' ? materializeDataset(option[key]) : materializeNode(option[key])
+  }
 
   const series = result.series
   if (Array.isArray(series)) {
