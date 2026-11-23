@@ -4,6 +4,25 @@
   "version": "0.1.0",
   "type": "module",
   "main": "electron/main.cjs",
+  "description": "Local-first ECharts Studio: turn CSV/TSV/Excel into standard, reusable ECharts options in your browser or desktop app.",
+  "license": "MIT",
+  "author": "zengjianjin0920",
+  "homepage": "https://zengjianjin.github.io/local-to-echart/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zengjianjin/local-to-echart.git"
+  },
+  "keywords": [
+    "echarts",
+    "visualization",
+    "csv",
+    "excel",
+    "electron",
+    "local-first",
+    "data-visualization",
+    "chart"
+  ],
+  "packageManager": "pnpm@12.14.0",
   "scripts": {
     "dev": "vite",
     "dev:electron": "node scripts/dev-electron.mjs",
@@ -51,6 +70,9 @@
   "build": {
     "appId": "com.localtoecharts.studio",
     "productName": "Local to ECharts Studio",
+    "directories": {
+      "output": "release"
+    },
     "files": [
       "dist/**/*",
       "electron/**/*"

@@ -1,5 +1,11 @@
 # Local to ECharts Studio
 
+**[在线 Demo](https://zengjianjin.github.io/local-to-echart/)** · [English](README.md) · [MIT 许可证](LICENSE)
+
+> **本地优先的 ECharts Studio——数据不出本机，导出的是可直接复用的标准 ECharts option。**
+>
+> 导入 CSV / TSV / Excel，用表单或 JSON 编辑任意 ECharts 字段，再导出图表或 option 本身。
+
 一个本地优先的数据到图表工作台。左侧导入并预览表格数据，中间实时渲染 ECharts 图表，右侧提供完整的属性检查器：默认使用 schema 驱动的可视化表单，也可切换到 JSON 直接编辑任意 ECharts 字段。
 
 ## 核心能力
@@ -15,6 +21,18 @@
 - 表单、JSON 与渲染使用同一份配置；表单不会伪造 option 中未设置的默认值。
 - 浅色（默认）与深色主题切换，界面配色不影响图片导出的深色背景。
 - 支持浏览器和 Electron 桌面运行。
+
+## 为什么选择本项目
+
+| | Local to ECharts Studio | RAWGraphs | 常见粘贴出图网站 |
+|---|---|---|---|
+| 数据处理位置 | 完全在浏览器 / 桌面应用内，不上传 | 浏览器内处理 | 通常需要上传到服务器 |
+| 产出物 | 完整可序列化的**标准 ECharts `option`**，以及 PNG / SVG / PDF | 适合发布的 SVG / PNG | 图片或托管图表链接 |
+| 在自己代码中复用 | 把 option 贴进任意 ECharts 项目即可 | 不是 ECharts option | 通常只能重新上传数据 |
+| 编辑深度 | 可视化表单 **+** 覆盖所有字段（含未知字段）的 JSON 编辑器 | 预设图表类型与字段映射 | 只有预设选项 |
+| 离线桌面版 | 有（Electron） | 无 | 无 |
+
+如果你只要一张图表**图片**，RAWGraphs 很好用；如果你要的是生成这张图的 **ECharts option**——能放进仪表盘、能在代码里继续改、能提交进 Git——那这个工具更适合你。
 
 ## 架构
 
@@ -36,7 +54,7 @@ pnpm dev:electron
 pnpm dist
 ```
 
-浏览器开发端口为 `1420`；Electron 开发模式使用 `1422`，并通过 `VLE_DEV_URL` 传给主进程。`pnpm dist` 使用 electron-builder 生成安装包。
+浏览器开发端口为 `1420`；Electron 开发模式使用 `1422`，并通过 `VLE_DEV_URL` 传给主进程。`pnpm dist` 使用 electron-builder 在 `release/` 目录生成安装包。
 
 ## 配置格式
 
@@ -57,3 +75,7 @@ pnpm dist
 - 项目使用全量 ECharts，确保 `dataZoom`、`visualMap`、`toolbox`、`graphic` 等高级组件无需手动注册即可使用。
 - 函数型字段使用模板描述对象表达，不会执行用户输入的脚本。
 - Electron 保持 `nodeIntegration` 关闭、`contextIsolation` 开启。
+
+## 许可证
+
+[MIT](LICENSE) © 2026 zengjianjin0920

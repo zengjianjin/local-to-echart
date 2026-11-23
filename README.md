@@ -1,6 +1,12 @@
 # Local to ECharts Studio
 
-A local-first desktop workbench for turning CSV, TSV, and Excel data into ECharts charts. The right panel is a full option inspector: schema-driven visual forms for everyday editing plus a JSON editor for every ECharts field, including unknown and future fields.
+**[Live demo](https://zengjianjin.github.io/local-to-echart/)** · [中文版](README.zh-CN.md) · [MIT License](LICENSE)
+
+> **Local-first ECharts Studio — your data never leaves your machine, and what you export is a standard, reusable ECharts option.**
+>
+> Import CSV / TSV / Excel, edit every ECharts field visually or as JSON, then export charts or the option itself.
+
+A local-first workbench for turning tabular data into ECharts charts. The right panel is a full option inspector: schema-driven visual forms for everyday editing plus a JSON editor for every ECharts field, including unknown and future fields.
 
 ## Features
 
@@ -15,6 +21,18 @@ A local-first desktop workbench for turning CSV, TSV, and Excel data into EChart
 - Keep form, JSON, and rendered chart in sync; unset fields are never replaced with fabricated defaults.
 - Switch between light (default) and dark UI themes; exports always use a dark background.
 - Run in a browser or as an Electron desktop app.
+
+## Why Local to ECharts Studio
+
+| | Local to ECharts Studio | RAWGraphs | Typical paste-and-chart sites |
+|---|---|---|---|
+| Where data is processed | Entirely in your browser / desktop app; no upload | Browser-based | Often uploaded to a server |
+| What you get out | A full, serializable **standard ECharts `option`**, plus PNG / SVG / PDF | Publication-ready SVG / PNG | An image or a hosted chart link |
+| Reuse in your own code | Paste the option into any ECharts project | Not an ECharts option | Usually limited to re-uploading data |
+| Editing depth | Visual forms **and** a JSON editor for every field, including unknown ones | Curated chart types and mappings | Preset options only |
+| Offline desktop app | Yes (Electron) | No | No |
+
+If you only need a chart **image**, RAWGraphs is excellent. If you need the **ECharts option** that produced the chart — to ship it in a dashboard, keep tweaking it in code, or version it in Git — this is the tool for you.
 
 ## Architecture
 
@@ -36,7 +54,7 @@ pnpm dev:electron
 pnpm dist
 ```
 
-Browser dev server: `http://localhost:1420`. Electron dev mode uses port `1422` and passes it through `VLE_DEV_URL`. `pnpm dist` produces an installer via electron-builder.
+Browser dev server: `http://localhost:1420`. Electron dev mode uses port `1422` and passes it through `VLE_DEV_URL`. `pnpm dist` produces an installer in `release/` via electron-builder.
 
 ## Configuration format
 
@@ -57,3 +75,7 @@ Example files: `examples/sample.csv` and `examples/sample-chart-project.json`.
 - The full ECharts bundle is used so advanced components such as `dataZoom`, `visualMap`, `toolbox`, and `graphic` work without manual registration.
 - Formatter callbacks are represented as serializable template descriptors. Arbitrary JavaScript strings are never evaluated.
 - Electron keeps `nodeIntegration` disabled and `contextIsolation` enabled.
+
+## License
+
+[MIT](LICENSE) © 2026 zengjianjin0920
