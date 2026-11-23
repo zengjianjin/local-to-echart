@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Maximize2, Table2 } from 'lucide-vue-next'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 
+const { t } = useI18n()
 const { state } = useWorkspaceStore()
 const visibleColumns = computed(() => state.table?.columns.slice(0, 5) ?? [])
 const visibleRows = computed(() => state.table?.rows.slice(0, 12) ?? [])
@@ -16,16 +18,16 @@ function typeLabel(type: string) {
   <div class="flex min-h-0 flex-1 flex-col rounded-xl border border-white/[0.08] bg-ink-950/45">
     <div class="flex items-center justify-between border-b border-white/[0.06] px-3 py-2.5">
       <div class="flex items-center gap-2 text-[11px] font-semibold text-ink-50">
-        <Table2 :size="13" class="text-primary" /> 数据预览
+        <Table2 :size="13" class="text-primary" /> {{ t('data.previewTitle') }}
       </div>
       <button
         type="button"
-        title="打开全量预览弹窗"
+        :title="t('data.openFullPreview')"
         class="flex items-center gap-1 rounded-md border border-white/[0.08] px-1.5 py-0.5 text-[9px] text-ink-400 transition hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
         :disabled="!state.table"
         @click="state.ui.dataPreviewOpen = true"
       >
-        <Maximize2 :size="10" /> 全量
+        <Maximize2 :size="10" /> {{ t('data.full') }}
       </button>
     </div>
 
@@ -34,7 +36,7 @@ function typeLabel(type: string) {
         <div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-ink-500">
           <Table2 :size="18" />
         </div>
-        <p class="text-[11px] text-ink-400">导入文件后，这里会显示表头、字段类型与前 12 行数据。</p>
+        <p class="text-[11px] text-ink-400">{{ t('data.emptyTable') }}</p>
       </div>
     </div>
 
@@ -70,7 +72,7 @@ function typeLabel(type: string) {
         </tbody>
       </table>
       <div class="px-3 py-2 text-center text-[9px] text-ink-500">
-        仅预览前 12 行 · <button type="button" class="text-primary hover:underline" @click="state.ui.dataPreviewOpen = true">查看全部 {{ state.table.rowCount }} 行</button>
+        {{ t('data.previewLimit') }} <button type="button" class="text-primary hover:underline" @click="state.ui.dataPreviewOpen = true">{{ t('data.viewAllRows', { count: state.table.rowCount }) }}</button>
       </div>
     </div>
   </div>

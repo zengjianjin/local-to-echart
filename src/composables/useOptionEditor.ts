@@ -1,4 +1,5 @@
 import { ref, watch } from 'vue'
+import { translate } from '@/i18n/translate'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import type { SerializableNode } from '@/types'
 import { logError } from '@/utils/logger'
@@ -37,7 +38,10 @@ watch(
 function applyDraft() {
   const result = parseOptionJson(jsonDraft.value)
   if (!result.ok || !result.option) {
-    jsonError.value = result.line ? `第 ${result.line} 行：${result.message ?? 'JSON 无效'}` : result.message ?? 'JSON 无效'
+    const message = result.message ?? translate('runtime.jsonInvalid')
+    jsonError.value = result.line
+      ? translate('runtime.jsonLineError', { line: result.line, message })
+      : message
     return
   }
   jsonError.value = ''

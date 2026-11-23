@@ -1,5 +1,6 @@
 import Papa from 'papaparse'
 import type { TableData } from '@/types'
+import { translate } from '@/i18n/translate'
 import { inferTypeFromValues } from './typeInference'
 import { toNumber } from './numberParse'
 
@@ -33,15 +34,15 @@ export function parseCsvText(text: string, name = 'pasted.csv', headerRow = 1): 
       rawRows = result.data as unknown[][]
     },
   })
-  if (!rawRows.length) throw new Error('CSV 中没有可读取的数据')
+  if (!rawRows.length) throw new Error(translate('runtime.csvNoData'))
 
   const headerIndex = normalizeHeaderRow(headerRow) - 1
-  if (headerIndex >= rawRows.length) throw new Error('表头行超出数据范围')
+  if (headerIndex >= rawRows.length) throw new Error(translate('runtime.headerOutOfRange'))
   const headerCells = rawRows[headerIndex] ?? []
   const width = Math.max(...rawRows.map((row) => row.length), headerCells.length)
   const usedNames = new Map<string, number>()
   const columns = Array.from({ length: width }, (_, index) => {
-    let base = String(headerCells[index] ?? '').trim() || `字段 ${index + 1}`
+    let base = String(headerCells[index] ?? '').trim() || translate('runtime.defaultField', { index: index + 1 })
     const group = String(rawRows[headerIndex - 1]?.[index] ?? '').trim()
     if (group && group !== base) base = `${group} / ${base}`
     const count = (usedNames.get(base) ?? 0) + 1

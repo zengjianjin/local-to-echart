@@ -1,10 +1,12 @@
-const { app, BrowserWindow, shell, Menu } = require('electron')
+const { app, BrowserWindow, shell, Menu, ipcMain } = require('electron')
 const path = require('node:path')
+const { detectSystemLocale, isSupportedLocale, messagesFor } = require('./i18n.cjs')
 
 const devUrl = process.env.VLE_DEV_URL || ''
 const isDev = Boolean(devUrl) && !app.isPackaged
 
 let mainWindow = null
+let currentLocale = 'zh-CN'
 
 function openExternal(url) {
   if (/^https?:\/\//.test(url)) {
@@ -12,20 +14,45 @@ function openExternal(url) {
   }
 }
 
+function applyLocalizedUi() {
+  const texts = messagesFor(currentLocale)
+  mainWindow?.setTitle(texts.windowTitle)
+  if (!isDev) {
+    Menu.setApplicationMenu(null)
+    return
+  }
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      { role: 'appMenu' },
+      { role: 'editMenu' },
+      { role: 'viewMenu' },
+      {
+        label: texts.menuDev,
+        submenu: [
+          { role: 'reload', label: texts.menuReload },
+          { role: 'forceReload', label: texts.menuForceReload },
+          { role: 'toggleDevTools', label: texts.menuToggleDevTools },
+        ],
+      },
+    ]),
+  )
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1560,
     height: 940,
-    minWidth: 1180,
+    minWidth: 1024,
     minHeight: 720,
     backgroundColor: '#0B1120',
-    title: 'Local to ECharts Studio',
+    title: messagesFor(currentLocale).windowTitle,
     titleBarStyle: 'hiddenInset',
     show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
+      preload: path.join(__dirname, 'preload.cjs'),
     },
   })
 
@@ -60,28 +87,19 @@ function createWindow() {
     mainWindow = null
   })
 
-  if (isDev) {
-    Menu.setApplicationMenu(
-      Menu.buildFromTemplate([
-        { role: 'appMenu' },
-        { role: 'editMenu' },
-        { role: 'viewMenu' },
-        {
-          label: '开发',
-          submenu: [
-            { role: 'reload', label: '重新加载' },
-            { role: 'forceReload', label: '强制重新加载' },
-            { role: 'toggleDevTools', label: '切换开发者工具' },
-          ],
-        },
-      ]),
-    )
-  } else {
-    Menu.setApplicationMenu(null)
-  }
+  applyLocalizedUi()
 }
 
-app.whenReady().then(createWindow)
+ipcMain.on('i18n:set-locale', (_event, locale) => {
+  if (!isSupportedLocale(locale) || locale === currentLocale) return
+  currentLocale = locale
+  applyLocalizedUi()
+})
+
+app.whenReady().then(() => {
+  currentLocale = detectSystemLocale(app.getLocale())
+  createWindow()
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()

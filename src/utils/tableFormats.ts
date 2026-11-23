@@ -1,4 +1,5 @@
 import type { TableData } from '@/types'
+import { translate } from '@/i18n/translate'
 import { inferTypeFromValues } from './typeInference'
 import { toNumber } from './numberParse'
 import { parseCsvText } from './csv'
@@ -17,7 +18,7 @@ function toCell(value: unknown): Cell {
 function uniqueColumns(header: unknown[], width: number): string[] {
   const used = new Map<string, number>()
   const columns = Array.from({ length: width }, (_, index) => {
-    let base = String(header[index] ?? '').trim() || `字段 ${index + 1}`
+    let base = String(header[index] ?? '').trim() || translate('runtime.defaultField', { index: index + 1 })
     const count = (used.get(base) ?? 0) + 1
     used.set(base, count)
     return count > 1 ? `${base} (${count})` : base
@@ -53,7 +54,7 @@ function parseObjectRecords(name: string, records: Array<Record<string, unknown>
       if (!columns.includes(key)) columns.push(key)
     }
   }
-  if (!columns.length) throw new Error('JSON 中没有可读取的字段')
+  if (!columns.length) throw new Error(translate('runtime.jsonNoFields'))
   return finalizeTable(name, columns, records.map((record) => jsonValueToRow(record, columns)))
 }
 
@@ -77,7 +78,7 @@ function parseJsonLines(text: string, name: string): TableData {
       records.push(value as Record<string, unknown>)
     }
   }
-  if (!records.length) throw new Error('JSON Lines 中没有可读取的对象')
+  if (!records.length) throw new Error(translate('runtime.jsonlNoObjects'))
   return parseObjectRecords(name, records)
 }
 
@@ -102,19 +103,19 @@ function isJsonLines(text: string): boolean {
 
 export function parseJsonTable(text: string, name = 'data.json'): TableData {
   const trimmed = text.trim()
-  if (!trimmed) throw new Error('JSON 内容为空')
+  if (!trimmed) throw new Error(translate('runtime.jsonEmpty'))
   if (isJsonLines(trimmed)) return parseJsonLines(trimmed, name)
 
   let value: unknown
   try {
     value = JSON.parse(trimmed)
   } catch {
-    throw new Error('JSON 格式无法解析')
+    throw new Error(translate('runtime.jsonParseFailed'))
   }
 
   const array = unwrapJsonArray(value)
   if (array) {
-    if (!array.length) throw new Error('JSON 数组为空')
+    if (!array.length) throw new Error(translate('runtime.jsonArrayEmpty'))
     if (Array.isArray(array[0])) {
       const header = array[0] as unknown[]
       return finalizeTable(name, header, array.slice(1) as unknown[][])
@@ -129,7 +130,7 @@ export function parseJsonTable(text: string, name = 'data.json'): TableData {
     const columns = Object.keys(record)
     return finalizeTable(name, columns, [columns.map((column) => record[column])])
   }
-  throw new Error('JSON 根节点需要是数组、对象数组或 JSON Lines')
+  throw new Error(translate('runtime.jsonRootType'))
 }
 
 function splitMarkdownRow(line: string): string[] {
@@ -147,7 +148,7 @@ function isMarkdownDivider(line: string): boolean {
 export function parseMarkdownTable(text: string, name = 'table.md'): TableData {
   const lines = text.split(/\r?\n/).filter((line) => line.trim())
   const tableLines = lines.filter((line) => line.includes('|') && !isMarkdownDivider(line))
-  if (tableLines.length < 2) throw new Error('未找到有效的 Markdown 表格')
+  if (tableLines.length < 2) throw new Error(translate('runtime.noMarkdownTable'))
   const header = splitMarkdownRow(tableLines[0])
   const body = tableLines.slice(1).map(splitMarkdownRow)
   return finalizeTable(name, header, body)
@@ -165,7 +166,7 @@ export function looksLikeJson(text: string): boolean {
 
 export function parseClipboardText(text: string, name = 'pasted.txt'): TableData {
   const trimmed = text.trim()
-  if (!trimmed) throw new Error('剪贴板内容为空')
+  if (!trimmed) throw new Error(translate('runtime.clipboardEmpty'))
   if (looksLikeMarkdown(trimmed)) return parseMarkdownTable(trimmed, name)
   if (looksLikeJson(trimmed)) return parseJsonTable(trimmed, name)
   return parseCsvText(trimmed, name)

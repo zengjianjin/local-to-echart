@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Select from '@/components/ui/Select.vue'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 
 const props = defineProps<{ groupIndex: number }>()
+const { t } = useI18n()
 
 const {
   state,
@@ -36,17 +38,17 @@ const nameFields = computed(() => currentSeriesNameFields(props.groupIndex))
 const nameField = computed(() => nameFields.value[0] ?? '')
 const valueField = computed(() => currentSeriesValueField(props.groupIndex))
 const nameFieldOptions = computed(() => [
-  { label: '不分组（单一系列）', value: '' },
+  { label: t('settings.nameGroupNone'), value: '' },
   ...columnOptions.value,
 ])
 const stackMode = computed(() => currentSeriesStackMode(props.groupIndex))
-const stackOptions = [
-  { label: '不堆叠（并列）', value: 'none' },
-  { label: '累加堆叠', value: 'stack' },
-  { label: '百分比堆叠', value: 'percent' },
-  { label: '同号堆叠 samesign', value: 'samesign' },
-  { label: '全值堆叠 all', value: 'all' },
-]
+const stackOptions = computed(() => [
+  { label: t('settings.stackNone'), value: 'none' },
+  { label: t('settings.stackTotal'), value: 'stack' },
+  { label: t('settings.stackPercent'), value: 'percent' },
+  { label: t('settings.stackSameSign'), value: 'samesign' },
+  { label: t('settings.stackAll'), value: 'all' },
+])
 const groupLimit = computed(() => currentSeriesGroupLimit(props.groupIndex))
 const categoryLimit = computed(() => currentSeriesCategoryLimit(props.groupIndex))
 const aggregate = computed(() => currentSeriesAggregate(props.groupIndex))
@@ -55,11 +57,11 @@ const activeGroupValues = computed(() => currentSeriesGroupValues(props.groupInd
 const allValuesSelected = computed(
   () => groupValueOptions.value.length > 0 && activeGroupValues.value.length === groupValueOptions.value.length,
 )
-const aggregateOptions = [
-  { label: '求和', value: 'sum' },
-  { label: '平均', value: 'avg' },
-  { label: '首条值', value: 'first' },
-]
+const aggregateOptions = computed(() => [
+  { label: t('settings.aggregateSum'), value: 'sum' },
+  { label: t('settings.aggregateAvg'), value: 'avg' },
+  { label: t('settings.aggregateFirst'), value: 'first' },
+])
 
 function onNameFieldChange(value: string | number) {
   setSeriesNameFields(props.groupIndex, value === '' ? [] : [Number(value)])
@@ -108,20 +110,20 @@ function updateStackMode(value: string | number) {
 <template>
   <div v-if="state.table">
     <div class="mb-2 flex items-center justify-between">
-      <span class="text-[10px] font-semibold text-ink-300">系列名称分组</span>
-      <span class="text-[9px] text-ink-600">tooltip 按字段拆分系列</span>
+      <span class="text-[10px] font-semibold text-ink-300">{{ t('settings.mapperTitle') }}</span>
+      <span class="text-[9px] text-ink-600">{{ t('settings.mapperHint') }}</span>
     </div>
 
-    <label class="mb-1 block text-[9px] text-ink-500">数值字段</label>
+    <label class="mb-1 block text-[9px] text-ink-500">{{ t('settings.valueField') }}</label>
     <Select
       :model-value="valueField >= 0 ? valueField : ''"
       :options="numericOptions"
-      placeholder="请选择数值列"
+      :placeholder="t('settings.valuePlaceholder')"
       @update:model-value="onValueFieldChange"
     />
 
     <div class="mt-2">
-      <label class="mb-1 block text-[9px] text-ink-500">名称分组字段</label>
+      <label class="mb-1 block text-[9px] text-ink-500">{{ t('settings.nameField') }}</label>
       <Select
         :model-value="nameField"
         :options="nameFieldOptions"
@@ -132,10 +134,10 @@ function updateStackMode(value: string | number) {
     <div v-if="groupValueOptions.length" class="mt-2">
       <div class="mb-1 flex items-center justify-between">
         <span class="text-[9px] text-ink-500">
-          参与分组的取值（默认前 4 个，已选 {{ activeGroupValues.length }}/{{ groupValueOptions.length }}）
+          {{ t('settings.selectedValues', { active: activeGroupValues.length, total: groupValueOptions.length }) }}
         </span>
         <button type="button" class="text-[9px] text-primary hover:underline" @click="toggleAllGroupValues">
-          {{ allValuesSelected ? '恢复默认' : '全选' }}
+          {{ allValuesSelected ? t('common.restoreDefault') : t('settings.selectAll') }}
         </button>
       </div>
       <div class="scrollbar-slim flex max-h-[76px] flex-wrap gap-1 overflow-auto rounded border border-white/[0.08] bg-ink-950/40 p-1">
@@ -155,7 +157,7 @@ function updateStackMode(value: string | number) {
     </div>
 
     <div class="mt-2">
-      <span class="mb-1 block text-[9px] text-ink-500">堆叠方式</span>
+      <span class="mb-1 block text-[9px] text-ink-500">{{ t('settings.stackMode') }}</span>
       <Select
         :model-value="stackMode"
         :options="stackOptions"
@@ -165,7 +167,7 @@ function updateStackMode(value: string | number) {
 
     <div class="mt-2 grid grid-cols-2 gap-2">
       <label class="block">
-        <span class="mb-1 block text-[9px] text-ink-500">最多系列数</span>
+        <span class="mb-1 block text-[9px] text-ink-500">{{ t('settings.maxSeries') }}</span>
         <input
           type="number"
           min="1"
@@ -176,7 +178,7 @@ function updateStackMode(value: string | number) {
         />
       </label>
       <label class="block">
-        <span class="mb-1 block text-[9px] text-ink-500">最多类目数</span>
+        <span class="mb-1 block text-[9px] text-ink-500">{{ t('settings.maxCategories') }}</span>
         <input
           type="number"
           min="1"
@@ -189,7 +191,7 @@ function updateStackMode(value: string | number) {
     </div>
 
     <div class="mt-2 flex items-center justify-between gap-2">
-      <span class="shrink-0 text-[9px] text-ink-500">同组同值聚合</span>
+      <span class="shrink-0 text-[9px] text-ink-500">{{ t('settings.sameGroupAggregate') }}</span>
       <Select
         :model-value="aggregate"
         :options="aggregateOptions"
@@ -198,8 +200,7 @@ function updateStackMode(value: string | number) {
     </div>
 
     <p class="mt-2 text-[9px] leading-relaxed text-ink-600">
-      按所选字段把行拆成多个系列，每个系列名就是该字段的值；取值太多时会拖慢渲染，默认只取前 24 个系列、100 个类目。
-      例如数值字段选「实际用电量」、名称分组字段选「时段」并开启堆叠，30 天的 96 个时段会在 tooltip 里分开显示，同一天的柱叠成一根。
+      {{ t('settings.mapperHelp') }}
     </p>
   </div>
 </template>

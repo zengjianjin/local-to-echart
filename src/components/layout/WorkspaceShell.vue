@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { Database, Moon, PanelLeftClose, PanelLeftOpen, SlidersHorizontal, Sun, UploadCloud } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { Languages, Database, Moon, PanelLeftClose, PanelLeftOpen, SlidersHorizontal, Sun, UploadCloud } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import Button from '@/components/ui/Button.vue'
 import DataImportPanel from '@/components/data/DataImportPanel.vue'
 import DataPreviewDialog from '@/components/data/DataPreviewDialog.vue'
@@ -9,8 +11,23 @@ import ChartToolbar from '@/components/chart/ChartToolbar.vue'
 import OptionPanel from '@/components/settings/OptionPanel.vue'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { isDragging, onDrop } from '@/composables/useFileImport'
+import type { Locale } from '@/i18n/types'
 
-const { state, toggleTheme } = useWorkspaceStore()
+const { state, toggleTheme, setLocale } = useWorkspaceStore()
+const { t } = useI18n()
+
+const localeOrder: Locale[] = ['zh-CN', 'zh-TW', 'en-US']
+const localeLabels: Record<Locale, string> = {
+  'zh-CN': '简体',
+  'zh-TW': '繁體',
+  'en-US': 'EN',
+}
+const currentLocaleLabel = computed(() => localeLabels[state.ui.locale])
+const nextLocale = computed(() => localeOrder[(localeOrder.indexOf(state.ui.locale) + 1) % localeOrder.length])
+
+function toggleLocale() {
+  setLocale(nextLocale.value)
+}
 
 function onChartDragLeave(event: globalThis.DragEvent) {
   const next = event.relatedTarget as Node | null
@@ -23,38 +40,43 @@ function onChartDragLeave(event: globalThis.DragEvent) {
 <template>
   <div class="flex h-screen flex-col overflow-hidden">
     <header class="flex h-14 shrink-0 items-center gap-3 border-b border-white/[0.08] bg-ink-950/80 px-4 backdrop-blur-xl">
-      <Button size="icon" :title="state.ui.leftCollapsed ? '展开数据面板' : '折叠数据面板'" @click="state.ui.leftCollapsed = !state.ui.leftCollapsed">
+      <Button class="shrink-0" size="icon" :title="state.ui.leftCollapsed ? t('workspace.expandDataPanel') : t('workspace.collapseDataPanel')" @click="state.ui.leftCollapsed = !state.ui.leftCollapsed">
         <PanelLeftOpen v-if="state.ui.leftCollapsed" :size="14" />
         <PanelLeftClose v-else :size="14" />
       </Button>
 
-      <img src="/favicon.svg" alt="" class="h-8 w-8 rounded-xl shadow-glow" />
-      <div>
-        <div class="text-[13px] font-semibold tracking-tight text-ink-50">Local to ECharts Studio</div>
-        <div class="text-[9px] text-ink-500">完整 ECharts Option 本地编辑器</div>
+      <img src="/favicon.svg" alt="" class="h-8 w-8 shrink-0 rounded-xl shadow-glow" />
+      <div class="min-w-0 shrink-0">
+        <div class="truncate text-[13px] font-semibold tracking-tight text-ink-50">{{ t('common.appName') }}</div>
+        <div class="hidden text-[9px] text-ink-500 xl:block">{{ t('workspace.tagline') }}</div>
       </div>
 
-      <div class="mx-3 h-7 w-px bg-white/10" />
+      <div class="mx-1 hidden h-7 w-px shrink-0 bg-white/10 lg:block" />
 
-      <div class="flex min-w-0 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5">
-        <Database :size="12" class="text-primary" />
-        <span class="max-w-[240px] truncate text-[11px] text-ink-200">{{ state.project.meta.name }}</span>
+      <div class="hidden min-w-0 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 lg:flex">
+        <Database :size="12" class="shrink-0 text-primary" />
+        <span class="max-w-[160px] truncate text-[11px] text-ink-200 2xl:max-w-[240px]">{{ state.project.meta.name }}</span>
       </div>
 
-      <div class="ml-auto flex items-center gap-2 text-[10px] text-ink-500">
-        <span class="hidden md:inline">数据本地处理 · 不上传</span>
+      <div class="ml-auto flex shrink-0 items-center gap-2 text-[10px] text-ink-500">
+        <span class="hidden 2xl:inline">{{ t('workspace.localOnlyBadge') }}</span>
         <span class="h-1.5 w-1.5 rounded-full bg-mint-500 animate-pulse-soft" />
       </div>
 
+      <Button class="shrink-0" size="sm" :title="`${t('common.language')} · ${currentLocaleLabel}`" @click="toggleLocale">
+        <Languages :size="12" />
+        <span>{{ localeLabels[nextLocale] }}</span>
+      </Button>
       <Button
+        class="shrink-0"
         size="icon"
-        :title="state.ui.theme === 'light' ? '切换到深色外观' : '切换到浅色外观'"
+        :title="state.ui.theme === 'light' ? t('workspace.toggleDarkTheme') : t('workspace.toggleLightTheme')"
         @click="toggleTheme"
       >
         <Sun v-if="state.ui.theme === 'light'" :size="14" />
         <Moon v-else :size="14" />
       </Button>
-      <Button size="icon" title="展开右侧设置" @click="state.ui.rightCollapsed = false">
+      <Button class="shrink-0" size="icon" :title="t('workspace.expandRightSettings')" @click="state.ui.rightCollapsed = false">
         <SlidersHorizontal :size="14" />
       </Button>
     </header>
@@ -65,12 +87,12 @@ function onChartDragLeave(event: globalThis.DragEvent) {
       <button
         v-else
         type="button"
-        title="展开数据面板"
+        :title="t('workspace.expandDataPanel')"
         class="flex w-9 shrink-0 flex-col items-center gap-2 border-r border-white/[0.08] bg-ink-900/40 py-4 text-ink-500 transition hover:text-primary"
         @click="state.ui.leftCollapsed = false"
       >
         <Database :size="14" />
-        <span class="text-[10px] [writing-mode:vertical-rl]">数据</span>
+        <span class="text-[10px] [writing-mode:vertical-rl]">{{ t('workspace.data') }}</span>
       </button>
 
       <section
@@ -81,12 +103,12 @@ function onChartDragLeave(event: globalThis.DragEvent) {
         @drop.prevent="onDrop"
       >
         <ChartToolbar />
-        <div class="min-h-0 flex-1 p-4">
+        <div class="min-h-0 flex-1 p-3 2xl:p-4">
           <ChartCanvas />
         </div>
         <div class="flex h-8 shrink-0 items-center gap-3 overflow-hidden whitespace-nowrap border-t border-white/[0.06] px-4 text-[10px] text-ink-600">
-          <span>本地处理 · 数据不上传</span>
-          <span class="ml-auto min-w-0 truncate font-mono" title="当前选中的字段路径">{{ state.ui.selectedPath || '未选择字段' }}</span>
+          <span>{{ t('workspace.localOnlyLong') }}</span>
+          <span class="ml-auto min-w-0 truncate font-mono" :title="t('workspace.selectedPathTitle')">{{ state.ui.selectedPath || t('workspace.noSelectedPath') }}</span>
         </div>
         <div
           v-if="isDragging"
@@ -96,8 +118,8 @@ function onChartDragLeave(event: globalThis.DragEvent) {
             <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary">
               <UploadCloud :size="28" />
             </div>
-            <div class="text-[15px] font-semibold text-ink-50">松手即可导入表格</div>
-            <div class="text-[11px] text-ink-400">支持 CSV / JSON / JSONL / Markdown / Excel · 数据仅在本机处理，不上传</div>
+            <div class="text-[15px] font-semibold text-ink-50">{{ t('workspace.dropToImport') }}</div>
+            <div class="text-[11px] text-ink-400">{{ t('workspace.dropSupport') }}</div>
           </div>
         </div>
       </section>
@@ -107,12 +129,12 @@ function onChartDragLeave(event: globalThis.DragEvent) {
       <button
         v-if="state.ui.rightCollapsed"
         type="button"
-        title="展开图表设置"
+        :title="t('workspace.expandChartSettings')"
         class="flex w-9 shrink-0 flex-col items-center gap-2 border-l border-white/[0.08] bg-ink-900/40 py-4 text-ink-500 transition hover:text-primary"
         @click="state.ui.rightCollapsed = false"
       >
         <SlidersHorizontal :size="14" />
-        <span class="text-[10px] [writing-mode:vertical-rl]">设置</span>
+        <span class="text-[10px] [writing-mode:vertical-rl]">{{ t('workspace.settings') }}</span>
       </button>
     </main>
 

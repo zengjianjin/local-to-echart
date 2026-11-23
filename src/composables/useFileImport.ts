@@ -1,4 +1,5 @@
 import { ref, shallowRef } from 'vue'
+import { translate } from '@/i18n/translate'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { isExcelFile, isSupportedFile, parseTextFile } from '@/utils/fileParse'
 import { parseClipboardText } from '@/utils/tableFormats'
@@ -66,7 +67,7 @@ export async function importFiles(files: FileList | File[]) {
   const list = Array.from(files)
   const file = list.find(isSupportedFile)
   if (!file) {
-    state.ui.errorMessage = '请选择 CSV、TSV、JSON、JSON Lines、Markdown 表格或 Excel 文件'
+    state.ui.errorMessage = translate('runtime.chooseFileTypes')
     return
   }
   state.ui.isImporting = true

@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { SchemaSection } from '@/types'
 import { cn } from '@/utils/cn'
 
 const props = defineProps<{ sections: SchemaSection[]; active: string }>()
 const emit = defineEmits<{ (event: 'select', value: string): void }>()
+const { t } = useI18n()
 
-const groups = [
-  { label: '基础', ids: ['global', 'data', 'title', 'legend', 'tooltip'] },
-  { label: '布局', ids: ['grid', 'xAxis', 'yAxis', 'otherAxes', 'axisPointer', 'toolbox'] },
-  { label: '系列', ids: ['series'] },
-  { label: '扩展', ids: ['dataZoom', 'visualMap', 'graphic', 'geo', 'timeline', 'brush', 'unknown'] },
-]
+const groups = computed(() => [
+  { label: t('settings.groupBasic'), ids: ['global', 'data', 'title', 'legend', 'tooltip'] },
+  { label: t('settings.groupLayout'), ids: ['grid', 'xAxis', 'yAxis', 'otherAxes', 'axisPointer', 'toolbox'] },
+  { label: t('settings.groupSeries'), ids: ['series'] },
+  { label: t('settings.groupAdvanced'), ids: ['dataZoom', 'visualMap', 'graphic', 'geo', 'timeline', 'brush', 'unknown'] },
+])
 
 const visibleGroups = computed(() =>
-  groups
+  groups.value
     .map((group) => ({
       label: group.label,
       sections: group.ids

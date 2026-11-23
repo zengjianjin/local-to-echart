@@ -1,4 +1,5 @@
 import type { SerializableNode } from '@/types'
+import { translate } from '@/i18n/translate'
 
 const BLOCKED_KEYS = new Set(['__proto__', 'prototype', 'constructor'])
 
@@ -9,7 +10,7 @@ export function parseOptionPath(path: string): Array<string | number> {
   let match: RegExpExecArray | null = pattern.exec(path)
   while (match) {
     if (match[1] !== undefined) {
-      if (BLOCKED_KEYS.has(match[1])) throw new Error(`不安全的配置路径: ${path}`)
+      if (BLOCKED_KEYS.has(match[1])) throw new Error(translate('runtime.unsafePath', { path }))
       tokens.push(match[1])
     } else if (match[2] !== undefined) {
       tokens.push(Number(match[2]))

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RotateCcw } from 'lucide-vue-next'
 import type { FieldSchema, FormatterDescriptor, SerializableNode } from '@/types'
 import FieldLabel from '@/components/ui/FieldLabel.vue'
@@ -12,11 +13,14 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { getOptionValue, hasOptionValue } from '@/utils/optionPath'
 import { normalizeFieldInput } from '@/utils/fieldInput'
 import { fieldKindLabels } from '@/schema'
+import { translateSchemaText } from '@/i18n/schema'
+import { fieldHelpText } from '@/utils/fieldHelp'
 
 const UNSET_VALUE = '__unset__'
 const SCALAR_KINDS = new Set(['string', 'number', 'boolean', 'color', 'enum', 'template'])
 
 const props = defineProps<{ field: FieldSchema; basePath?: string }>()
+const { t } = useI18n()
 const { state } = useWorkspaceStore()
 const { setOptionValueAt, setGridVisibility, removeOptionValueAt } = useWorkspaceStore()
 
@@ -72,7 +76,7 @@ const templateValue = computed(() => {
 const selectOptions = computed(() =>
   (props.field.enumValues ?? []).map((item) => ({ label: item.label, value: String(item.value) })),
 )
-const enumOptions = computed(() => [{ label: '未设置（默认）', value: UNSET_VALUE }, ...selectOptions.value])
+const enumOptions = computed(() => [{ label: t('common.notSetDefault'), value: UNSET_VALUE }, ...selectOptions.value])
 const enumValue = computed(() => (hasValue.value ? stringValue.value : UNSET_VALUE))
 
 function reset() {
@@ -241,11 +245,12 @@ onBeforeUnmount(() => {
         :label="field.label"
         :path="resolvedPath"
         :description="field.description"
+        :help="fieldHelpText(field, resolvedPath)"
       />
       <button
         v-if="isScalar && hasValue"
         type="button"
-        title="恢复默认"
+        :title="t('common.restoreDefault')"
         class="shrink-0 rounded p-0.5 text-ink-600 transition hover:bg-white/5 hover:text-ink-200"
         @click="reset"
       >
@@ -255,14 +260,14 @@ onBeforeUnmount(() => {
 
     <div v-if="field.kind === 'boolean'" class="flex items-center gap-2">
       <Switch :model-value="boolValue" :indeterminate="!hasValue" @update:model-value="update" />
-      <span v-if="!hasValue" class="text-[9px] text-ink-600">默认（未设置）</span>
+      <span v-if="!hasValue" class="text-[9px] text-ink-600">{{ t('common.defaultUnset') }}</span>
     </div>
 
     <Input
       v-else-if="field.kind === 'number'"
       type="number"
       :model-value="numberValue"
-      :placeholder="field.placeholder ?? '未设置（默认）'"
+      :placeholder="field.placeholder ?? t('common.notSetDefault')"
       :min="field.min"
       :max="field.max"
       :step="field.step ?? 1"
@@ -286,7 +291,7 @@ onBeforeUnmount(() => {
       />
       <Input
         :model-value="colorTextDraft"
-        placeholder="未设置（自动）"
+        :placeholder="t('common.notSetAuto')"
         @update:model-value="queueColorText"
         @blur="onColorTextBlur"
       />
@@ -296,11 +301,11 @@ onBeforeUnmount(() => {
       <Select
         :model-value="templateValue"
         :options="selectOptions"
-        placeholder="选择安全模板"
+        :placeholder="t('common.selectSafeTemplate')"
         @update:model-value="updateTemplate"
       />
       <Input :model-value="templateValue" placeholder="{b}: {c}" @update:model-value="updateTemplate" />
-      <p class="text-[9px] leading-relaxed text-ink-600">模板不会被当作代码执行，仅替换 ECharts 提供的参数变量。</p>
+      <p class="text-[9px] leading-relaxed text-ink-600">{{ t('settings.templateHint') }}</p>
     </div>
 
     <ArrayItemEditor
@@ -330,16 +335,16 @@ onBeforeUnmount(() => {
       v-else-if="field.kind === 'unknown'"
       class="rounded-lg border border-dashed border-white/10 px-3 py-2 text-[10px] leading-relaxed text-ink-500"
     >
-      该字段保留在配置中，请在 JSON 模式查看或编辑。
+      {{ t('settings.unknownFieldHint') }}
     </div>
 
     <Input
       v-else
       :model-value="stringValue"
-      :placeholder="field.placeholder ?? '未设置（默认）'"
+      :placeholder="field.placeholder ?? t('common.notSetDefault')"
       @update:model-value="updateText"
     />
 
-    <p v-if="!field.description && field.kind === 'array'" class="sr-only">{{ fieldKindLabels.array }}</p>
+    <p v-if="!field.description && field.kind === 'array'" class="sr-only">{{ translateSchemaText(fieldKindLabels.array) }}</p>
   </div>
 </template>

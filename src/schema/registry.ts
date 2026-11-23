@@ -1,4 +1,5 @@
 import type { FieldSchema, SchemaSection } from '@/types'
+import { localizeField, localizeSection } from '@/i18n/schema'
 import { globalSections } from './global'
 import { componentSections } from './components'
 import { axesSections } from './axes'
@@ -26,32 +27,54 @@ export function getSection(id: string): SchemaSection | undefined {
 }
 
 function matches(field: FieldSchema, query: string): boolean {
-  const haystack = [field.label, field.path, field.description ?? ''].join(' ').toLowerCase()
+  const localized = localizeField(field)
+  const enumLabels = (field.enumValues ?? []).flatMap((option, index) => [
+    option.label,
+    localized.enumValues?.[index]?.label ?? '',
+  ])
+  const haystack = [
+    field.label,
+    localized.label,
+    field.path,
+    field.description ?? '',
+    localized.description ?? '',
+    ...enumLabels,
+  ].join(' ').toLowerCase()
   return haystack.includes(query)
 }
 
 function filterField(field: FieldSchema, query: string): FieldSchema | null {
-  if (matches(field, query)) return field
+  if (matches(field, query)) return localizeField(field)
   const children = field.children?.map((child) => filterField(child, query)).filter(Boolean) as FieldSchema[] | undefined
   const itemFields = field.itemFields?.map((item) => filterField(item, query)).filter(Boolean) as FieldSchema[] | undefined
   if (children?.length || itemFields?.length) {
-    return { ...field, children: children?.length ? children : undefined, itemFields: itemFields?.length ? itemFields : undefined }
+    return {
+      ...localizeField(field),
+      children: children?.length ? children : undefined,
+      itemFields: itemFields?.length ? itemFields : undefined,
+    }
   }
   return null
 }
 
 export function filterSections(query: string): SchemaSection[] {
   const normalized = query.trim().toLowerCase()
-  if (!normalized) return allSections
+  if (!normalized) return allSections.map(localizeSection)
   return allSections
     .map((section) => {
-      if ([section.label, section.description, section.id].join(' ').toLowerCase().includes(normalized)) {
-        return section
-      }
+      const localizedSection = localizeSection(section)
+      const sectionHaystack = [
+        section.label,
+        localizedSection.label,
+        section.description,
+        localizedSection.description,
+        section.id,
+      ].join(' ').toLowerCase()
+      if (sectionHaystack.includes(normalized)) return localizedSection
       const fields = section.fields
         .map((field) => filterField(field, normalized))
         .filter(Boolean) as FieldSchema[]
-      return fields.length ? { ...section, fields } : null
+      return fields.length ? { ...localizedSection, fields } : null
     })
     .filter(Boolean) as SchemaSection[]
 }

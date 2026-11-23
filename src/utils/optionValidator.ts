@@ -1,4 +1,5 @@
 import type { ChartProjectFile, SerializableEchartsOption } from '@/types'
+import { translate } from '@/i18n/translate'
 import { logError } from './logger'
 
 export interface JsonParseResult {
@@ -17,7 +18,7 @@ export function parseOptionJson(text: string): JsonParseResult {
   try {
     const parsed = JSON.parse(text) as unknown
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return { ok: false, message: '根节点必须是 JSON 对象' }
+      return { ok: false, message: translate('runtime.optionRootMustBeObject') }
     }
     return { ok: true, option: parsed as SerializableEchartsOption }
   } catch (error) {
@@ -37,17 +38,17 @@ export function stringifyOption(option: SerializableEchartsOption, pretty = true
 
 export function validateProjectFile(value: unknown): { ok: true; project: ChartProjectFile } | { ok: false; message: string } {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-    return { ok: false, message: '配置文件根节点必须是对象' }
+    return { ok: false, message: translate('runtime.projectRootMustBeObject') }
   }
   const candidate = value as Partial<ChartProjectFile>
   if (candidate.formatVersion !== 1) {
-    return { ok: false, message: '这不是当前版本的项目配置，旧格式不会被导入' }
+    return { ok: false, message: translate('runtime.legacyProject') }
   }
   if (!candidate.meta || typeof candidate.meta.name !== 'string') {
-    return { ok: false, message: '配置缺少 meta.name' }
+    return { ok: false, message: translate('runtime.missingMetaName') }
   }
   if (!candidate.option || typeof candidate.option !== 'object' || Array.isArray(candidate.option)) {
-    return { ok: false, message: '配置缺少合法的 option 对象' }
+    return { ok: false, message: translate('runtime.missingOption') }
   }
   return { ok: true, project: candidate as ChartProjectFile }
 }

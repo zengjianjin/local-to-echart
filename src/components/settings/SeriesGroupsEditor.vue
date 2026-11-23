@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Plus, Trash2 } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import Collapsible from '@/components/ui/Collapsible.vue'
@@ -7,6 +8,7 @@ import SeriesNameFieldMapper from './SeriesNameFieldMapper.vue'
 import SeriesBulkEditor from './SeriesBulkEditor.vue'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 
+const { t } = useI18n()
 const { state, currentSeriesGroups, addSeriesGroup, removeSeriesGroup } = useWorkspaceStore()
 
 const groups = computed(() => currentSeriesGroups())
@@ -19,15 +21,17 @@ function columnName(index: number | undefined): string {
 
 function groupTitle(index: number): string {
   const field = columnName(groups.value[index]?.valueField)
-  return field ? `配置 ${index + 1} · ${field}` : `配置 ${index + 1}`
+  return field
+    ? t('settings.groupConfig', { index: index + 1, field })
+    : t('settings.groupConfigShort', { index: index + 1 })
 }
 
 function groupDescription(index: number): string {
   const group = groups.value[index]
   if (!group) return ''
   const names = group.nameFields.map((field) => columnName(field)).filter(Boolean)
-  const parts = [names.length ? `按 ${names.join(' / ')} 拆分` : '未选名称字段']
-  if (group.stackMode !== 'none') parts.push('已堆叠')
+  const parts = [names.length ? t('settings.groupBy', { names: names.join(' / ') }) : t('settings.groupNoNameField')]
+  if (group.stackMode !== 'none') parts.push(t('settings.groupStacked'))
   return parts.join(' · ')
 }
 
@@ -45,8 +49,8 @@ function setOpen(index: number, value: boolean) {
 <template>
   <div v-if="state.table" class="mb-3 space-y-2">
     <div class="flex items-center justify-between px-0.5">
-      <span class="text-[11px] font-medium text-ink-200">数据配置（{{ groups.length }}）</span>
-      <Button size="icon" variant="soft" title="添加配置" @click="addSeriesGroup">
+      <span class="text-[11px] font-medium text-ink-200">{{ t('settings.groupDataConfigs', { count: groups.length }) }}</span>
+      <Button size="icon" variant="soft" :title="t('settings.groupAdd')" @click="addSeriesGroup">
         <Plus :size="13" />
       </Button>
     </div>
@@ -64,7 +68,7 @@ function setOpen(index: number, value: boolean) {
         <Button
           size="icon"
           variant="danger"
-          title="删除该配置及其生成的系列"
+          :title="t('settings.groupRemove')"
           :disabled="groups.length <= 1"
           @click="removeSeriesGroup(index)"
         >

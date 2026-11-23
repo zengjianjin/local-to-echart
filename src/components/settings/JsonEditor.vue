@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { EditorState } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
 import { basicSetup } from 'codemirror'
@@ -8,6 +9,7 @@ import { linter, lintGutter } from '@codemirror/lint'
 import { indentWithTab } from '@codemirror/commands'
 import { useOptionEditor } from '@/composables/useOptionEditor'
 
+const { t } = useI18n()
 const { jsonDraft, jsonError, onJsonInput, applyDraft, syncDraft } = useOptionEditor()
 
 let view: EditorView | null = null
@@ -52,22 +54,22 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-ink-950/70">
     <div class="flex shrink-0 items-center gap-2 border-b border-white/[0.06] px-3 py-2">
-      <span class="text-[10px] font-medium text-ink-300">完整 ECharts Option</span>
-      <span class="text-[9px] text-ink-600">未知字段会原样保留</span>
+      <span class="text-[10px] font-medium text-ink-300">{{ t('settings.fullOption') }}</span>
+      <span class="text-[9px] text-ink-600">{{ t('settings.unknownFieldsPreserved') }}</span>
       <div class="ml-auto flex gap-1.5">
         <button
           type="button"
           class="rounded-md border border-white/10 px-2 py-1 text-[10px] text-ink-300 transition hover:border-primary/40 hover:text-ink-50"
           @click="syncDraft"
         >
-          重新载入
+          {{ t('common.reload') }}
         </button>
         <button
           type="button"
           class="rounded-md bg-primary/15 px-2 py-1 text-[10px] text-primary-100 transition hover:bg-primary/25"
           @click="applyDraft"
         >
-          立即应用
+          {{ t('common.applyNow') }}
         </button>
       </div>
     </div>

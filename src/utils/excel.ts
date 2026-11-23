@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx'
 import type { InferredFieldType, TableData } from '@/types'
+import { translate } from '@/i18n/translate'
 import { inferTypeFromValues } from './typeInference'
 import { toNumber } from './numberParse'
 
@@ -56,16 +57,16 @@ export function parseExcelBuffer(buffer: ArrayBuffer, name: string, sheetName?: 
   const rawRows = sheet
     ? (XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: '', raw: true }) as unknown[][])
     : []
-  if (!rawRows.length) throw new Error('工作簿中没有可读取的数据')
+  if (!rawRows.length) throw new Error(translate('runtime.emptyWorkbook'))
 
   const headerIndex = normalizeHeaderRow(headerRow) - 1
-  if (headerIndex >= rawRows.length) throw new Error('表头行超出数据范围')
+  if (headerIndex >= rawRows.length) throw new Error(translate('runtime.headerOutOfRange'))
   const headerCells = rawRows[headerIndex] ?? []
 
   const width = Math.max(...rawRows.map((row) => row.length), headerCells.length)
   const usedNames = new Map<string, number>()
   const columns = Array.from({ length: width }, (_, index) => {
-    let base = String(headerCells[index] ?? '').trim() || `字段 ${index + 1}`
+    let base = String(headerCells[index] ?? '').trim() || translate('runtime.defaultField', { index: index + 1 })
     const group = groupNameForColumn(rawRows, sheet?.['!merges'], headerIndex, index)
     if (group && group !== base) base = `${group} / ${base}`
     const count = (usedNames.get(base) ?? 0) + 1

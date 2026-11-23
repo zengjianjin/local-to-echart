@@ -1,6 +1,7 @@
 import * as echarts from 'echarts'
 import { jsPDF } from 'jspdf'
 import type { RuntimeOption } from './runtimeOption'
+import { translate } from '@/i18n/translate'
 import { logError } from './logger'
 import { dataUrlToBlob, downloadBlob } from './download'
 
@@ -52,7 +53,7 @@ function imageUrl(chart: ChartLike | null, option: RuntimeOption, size: ExportSi
       host.remove()
     }
   }
-  if (!chart) throw new Error('图表实例尚未就绪')
+  if (!chart) throw new Error(translate('runtime.chartNotReady'))
   return chart.getDataURL({ type, pixelRatio: 2, backgroundColor: backgroundFor(option) })
 }
 
@@ -106,7 +107,7 @@ function exportPdf(chart: ChartLike | null, option: RuntimeOption, name: string,
       logError('chartExport.pdf', error)
     }
   }
-  image.onerror = () => logError('chartExport.pdf', '无法读取图表图片数据')
+  image.onerror = () => logError('chartExport.pdf', translate('runtime.imageDataUnavailable'))
   image.src = url
   return null
 }

@@ -43,6 +43,7 @@ A local-first workbench for turning tabular data into ECharts charts. The right 
 - Export PNG, SVG, PDF, and JSON project files with selectable export resolution.
 - Keep form, JSON, and rendered chart in sync; unset fields are never replaced with fabricated defaults.
 - Switch between light (default) and dark UI themes; image exports use the option's `backgroundColor` (white by default).
+- Switch between Simplified Chinese, Traditional Chinese, and English from the header; the first launch follows your system language and your choice is remembered. More languages can be added by supplying a resource folder.
 - Run in a browser or as an Electron desktop app.
 
 ## Why Local to ECharts Studio
@@ -64,6 +65,8 @@ The application has no legacy configuration layer. A single serializable ECharts
 ```text
 Imported file -> TableData -> dataset.source -> runtime option -> ECharts
 Right panel   -> schema paths / JSON draft -> option -> preview
+Locale store  -> vue-i18n resources -> UI / runtime messages / schema labels
+              -> narrow preload bridge -> Electron title and dev menu
 ```
 
 ## Development
@@ -78,7 +81,7 @@ pnpm dist
 pnpm dist:win
 ```
 
-Browser dev server: `http://localhost:1420`. Electron dev mode uses port `1422` and passes it through `VLE_DEV_URL`. `pnpm dist` produces an installer in `release/` via electron-builder; `pnpm dist:win` builds the Windows NSIS installer (`*.exe`) with one command. The first run downloads Electron and NSIS resources; the script uses the npmmirror mirrors by default and respects `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR` if you set them. Windows builds set `signAndEditExecutable: false` to skip exe resource editing, so no administrator rights (or Developer Mode) are needed for the winCodeSign archive; enable it back only if you need a custom icon or code signing. The NSIS installer lets you choose the install directory, and only built assets are bundled (no `node_modules`). Only the `en-US` and `zh-CN` Electron language packs are kept.
+Browser dev server: `http://localhost:1420`. Electron dev mode uses port `1422` and passes it through `VLE_DEV_URL`. `pnpm dist` produces an installer in `release/` via electron-builder; `pnpm dist:win` builds the Windows NSIS installer (`*.exe`) with one command. The first run downloads Electron and NSIS resources; the script uses the npmmirror mirrors by default and respects `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR` if you set them. Windows builds set `signAndEditExecutable: false` to skip exe resource editing, so no administrator rights (or Developer Mode) are needed for the winCodeSign archive; enable it back only if you need a custom icon or code signing. The NSIS installer lets you choose the install directory, and only built assets are bundled (no `node_modules`). Only the `en-US`, `zh-CN`, and `zh-TW` Electron language packs are kept.
 
 ## Configuration format
 
@@ -90,6 +93,7 @@ Project files use `formatVersion: 1` and contain `meta`, `option`, and an option
 - [Option editor](docs/option-editor.md): form/JSON modes and field types.
 - [Data binding](docs/data-binding.md): supported formats, header rows, and `dataset` / `encode` mapping.
 - [Architecture](docs/architecture.md): state model and runtime data flow.
+- [Internationalization](docs/i18n.md): language resources, switching behavior, and how to add a language.
 - [QA checklist](docs/qa-checklist.md): feature verification list.
 
 Example files: `examples/sample.csv` and `examples/sample-chart-project.json`.
@@ -98,7 +102,7 @@ Example files: `examples/sample.csv` and `examples/sample-chart-project.json`.
 
 - The full ECharts bundle is used so advanced components such as `dataZoom`, `visualMap`, `toolbox`, and `graphic` work without manual registration.
 - Formatter callbacks are represented as serializable template descriptors. Arbitrary JavaScript strings are never evaluated.
-- Electron keeps `nodeIntegration` disabled and `contextIsolation` enabled.
+- Electron keeps `nodeIntegration` disabled, `contextIsolation` and sandbox enabled, and exposes only a narrow preload bridge for locale synchronization.
 
 ## License
 

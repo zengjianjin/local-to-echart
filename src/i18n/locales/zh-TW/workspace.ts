@@ -1,0 +1,17 @@
+export default {
+  tagline: '完整 ECharts Option 本地編輯器',
+  localOnlyBadge: '數據本地處理 · 不上傳',
+  localOnlyLong: '本地處理 · 數據不上傳',
+  expandDataPanel: '展開數據面板',
+  collapseDataPanel: '摺疊數據面板',
+  toggleDarkTheme: '切換到深色外觀',
+  toggleLightTheme: '切換到淺色外觀',
+  expandRightSettings: '展開右側設定',
+  data: '數據',
+  settings: '設定',
+  expandChartSettings: '展開圖表設定',
+  selectedPathTitle: '當前選中的欄位路徑',
+  noSelectedPath: '未選擇欄位',
+  dropToImport: '松手即可導入表格',
+  dropSupport: '支援 CSV / JSON / JSONL / Markdown / Excel · 數據僅在本機處理，不上傳',
+}

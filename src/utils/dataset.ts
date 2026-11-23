@@ -1,4 +1,5 @@
 import type { SerializableEchartsOption, TableData } from '@/types'
+import { translate } from '@/i18n/translate'
 import { cloneSerializableOption } from './optionClone'
 import { keepNonCartesianSeries } from './seriesKind'
 
@@ -7,7 +8,7 @@ export function createInitialOption(): SerializableEchartsOption {
     backgroundColor: 'transparent',
     color: ['#4F8CFF', '#6C5CE7', '#22C55E', '#F59E0B', '#EF4444', '#38BDF8'],
     textStyle: { fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif' },
-    title: { text: '未命名图表', left: 16, top: 12, textStyle: { fontSize: 18, fontWeight: 600 } },
+    title: { text: translate('runtime.unnamedChart'), left: 16, top: 12, textStyle: { fontSize: 18, fontWeight: 600 } },
     tooltip: { trigger: 'axis' },
     legend: { top: 42, right: 16 },
     grid: { show: false, left: 48, right: 28, top: 96, bottom: 44, containLabel: true },

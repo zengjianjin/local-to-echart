@@ -5,11 +5,11 @@ import { exportChart, type ChartLike, type ExportSize } from '@/utils/chartExpor
 import { logError } from '@/utils/logger'
 
 export const exportSizePresets = [
-  { value: 'auto', label: '跟随预览', width: null, height: null },
+  { value: 'auto', label: '', labelKey: 'chart.exportSizeFollow', width: null, height: null },
   { value: '1080p', label: '1920 × 1080', width: 1920, height: 1080 },
   { value: '1440p', label: '2560 × 1440', width: 2560, height: 1440 },
   { value: '4k', label: '3840 × 2160', width: 3840, height: 2160 },
-  { value: 'custom', label: '自定义', width: null, height: null },
+  { value: 'custom', label: '', labelKey: 'chart.exportSizeCustom', width: null, height: null },
 ] as const
 
 export const exportSize = reactive<ExportSize>({ preset: 'auto', width: null, height: null })

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Maximize2, Minimize2, PanelRightClose, RotateCcw, Search, SlidersHorizontal } from 'lucide-vue-next'
 import Tabs from '@/components/ui/Tabs.vue'
 import Input from '@/components/ui/Input.vue'
@@ -18,6 +19,7 @@ import UnknownFieldsPanel from './UnknownFieldsPanel.vue'
 import OptionStatusBar from './OptionStatusBar.vue'
 
 const emit = defineEmits<{ (event: 'toggle'): void }>()
+const { t } = useI18n()
 const { state } = useWorkspaceStore()
 const { resetAll } = useOptionEditor()
 
@@ -25,17 +27,17 @@ const sections = computed(() => filterSections(state.ui.search))
 const activeSection = computed(() => sections.value.find((section) => section.id === state.ui.activeSection) ?? sections.value[0])
 const panelWidthClass = computed(() => (
   state.ui.editorMode === 'json'
-    ? (state.ui.rightExpanded ? 'w-[720px]' : 'w-[560px]')
-    : (state.ui.rightExpanded ? 'w-[560px]' : 'w-[420px]')
+    ? (state.ui.rightExpanded ? 'w-[clamp(480px,46vw,720px)]' : 'w-[clamp(420px,36vw,560px)]')
+    : (state.ui.rightExpanded ? 'w-[clamp(360px,36vw,560px)]' : 'w-[clamp(320px,28vw,420px)]')
 ))
 
-const quickSections = [
-  { id: 'title', label: '标题' },
-  { id: 'legend', label: '图例' },
-  { id: 'grid', label: '网格' },
-  { id: 'xAxis', label: 'X 轴' },
-  { id: 'series', label: '系列' },
-]
+const quickSections = computed(() => [
+  { id: 'title', label: t('settings.quickTitle') },
+  { id: 'legend', label: t('settings.quickLegend') },
+  { id: 'grid', label: t('settings.quickGrid') },
+  { id: 'xAxis', label: t('settings.quickXAxis') },
+  { id: 'series', label: t('settings.quickSeries') },
+])
 
 function jumpTo(id: string) {
   state.ui.search = ''
@@ -53,7 +55,7 @@ watch(sections, (value) => {
   <aside
     :class="
       cn(
-        'flex shrink-0 flex-col border-l border-white/[0.08] bg-ink-900/55 transition-[width] duration-200',
+        'flex min-w-0 shrink-0 flex-col border-l border-white/[0.08] bg-ink-900/55 transition-[width] duration-200',
         panelWidthClass,
         state.ui.rightCollapsed && 'w-0 overflow-hidden border-l-0',
       )
@@ -66,15 +68,15 @@ watch(sections, (value) => {
             <SlidersHorizontal :size="14" />
           </div>
           <div class="min-w-0 flex-1">
-            <div class="text-[12px] font-semibold text-ink-50">图表设置</div>
-            <div class="truncate text-[9px] text-ink-500">完整 ECharts Option 编辑器</div>
+            <div class="text-[12px] font-semibold text-ink-50">{{ t('settings.settingsTitle') }}</div>
+            <div class="truncate text-[9px] text-ink-500">{{ t('settings.editorTitle') }}</div>
           </div>
-          <Button size="icon" :title="state.ui.rightExpanded ? '收窄面板' : '加宽面板'" @click="state.ui.rightExpanded = !state.ui.rightExpanded">
+          <Button size="icon" :title="state.ui.rightExpanded ? t('settings.narrowPanel') : t('settings.widenPanel')" @click="state.ui.rightExpanded = !state.ui.rightExpanded">
             <Minimize2 v-if="state.ui.rightExpanded" :size="13" />
             <Maximize2 v-else :size="13" />
           </Button>
           <span class="mx-0.5 h-5 w-px bg-white/10" />
-          <Button size="icon" title="折叠右侧面板" @click="emit('toggle')">
+          <Button size="icon" :title="t('settings.collapseRightPanel')" @click="emit('toggle')">
             <PanelRightClose :size="13" />
           </Button>
         </div>
@@ -82,22 +84,22 @@ watch(sections, (value) => {
         <div class="flex items-center gap-2">
           <Tabs
             :model-value="state.ui.editorMode"
-            :options="[{ label: '表单编辑', value: 'form' }, { label: 'JSON 编辑', value: 'json' }]"
+            :options="[{ label: t('settings.formMode'), value: 'form' }, { label: t('settings.jsonMode'), value: 'json' }]"
             @update:model-value="state.ui.editorMode = $event as 'form' | 'json'"
           />
-          <Button size="icon" title="恢复默认配置" @click="resetAll">
+          <Button size="icon" :title="t('common.restoreDefault')" @click="resetAll">
             <RotateCcw :size="12" />
           </Button>
         </div>
 
         <div v-if="state.ui.editorMode === 'form'" class="relative mt-2">
           <Search :size="12" class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-500" />
-          <Input v-model="state.ui.search" class="pl-7" placeholder="搜索字段、路径或中文标签" />
+          <Input v-model="state.ui.search" class="pl-7" :placeholder="t('settings.searchPlaceholder')" />
         </div>
       </header>
 
       <div v-if="state.ui.editorMode === 'form'" class="flex shrink-0 flex-wrap items-center gap-1 border-b border-white/[0.06] px-3 py-1.5">
-        <span class="mr-0.5 text-[9px] text-ink-600">快捷</span>
+        <span class="mr-0.5 text-[9px] text-ink-600">{{ t('settings.quick') }}</span>
         <button
           v-for="item in quickSections"
           :key="item.id"

@@ -1,0 +1,17 @@
+export default {
+  tagline: 'Full ECharts Option editor, running locally',
+  localOnlyBadge: 'Processed locally · No upload',
+  localOnlyLong: 'Local processing · No upload',
+  expandDataPanel: 'Expand data panel',
+  collapseDataPanel: 'Collapse data panel',
+  toggleDarkTheme: 'Switch to dark appearance',
+  toggleLightTheme: 'Switch to light appearance',
+  expandRightSettings: 'Expand right settings',
+  data: 'Data',
+  settings: 'Settings',
+  expandChartSettings: 'Expand chart settings',
+  selectedPathTitle: 'Currently selected field path',
+  noSelectedPath: 'No field selected',
+  dropToImport: 'Drop to import your table',
+  dropSupport: 'Supports CSV / JSON / JSONL / Markdown / Excel · Data stays on this device and is never uploaded',
+}

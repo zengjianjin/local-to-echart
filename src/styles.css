@@ -92,6 +92,24 @@
     background-clip: content-box;
   }
 
+  .scrollbar-toolbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
+  }
+
+  .scrollbar-toolbar::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .scrollbar-toolbar::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.28);
+  }
+
+  .scrollbar-toolbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
   .panel-surface {
     @apply border border-white/10 bg-ink-900/70 shadow-panel backdrop-blur-xl;
   }

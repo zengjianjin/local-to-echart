@@ -1,4 +1,5 @@
 import type { TableData } from '@/types'
+import { translate } from '@/i18n/translate'
 import { parseCsvText } from './csv'
 import { parseExcelBuffer } from './excel'
 import { parseJsonTable, parseMarkdownTable } from './tableFormats'
@@ -25,6 +26,8 @@ export function parseTextFile(text: string, name: string, sheetName?: string, he
   if (['csv', 'tsv', 'txt'].includes(extension)) return parseCsvText(text, name, headerRow)
   if (['json', 'jsonl', 'ndjson'].includes(extension)) return parseJsonTable(text, name)
   if (['md', 'markdown'].includes(extension)) return parseMarkdownTable(text, name)
-  if (isExcelFile({ name } as File)) throw new Error('Excel 文件需要二进制数据')
-  throw new Error(`不支持的文件类型: .${extension || '未知'}`)
+  if (isExcelFile({ name } as File)) throw new Error(translate('runtime.excelNeedsBinary'))
+  throw new Error(translate('runtime.unsupportedFileType', {
+    extension: extension || translate('runtime.unknownExtension'),
+  }))
 }

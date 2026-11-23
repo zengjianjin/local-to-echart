@@ -1,11 +1,12 @@
 import type { ChartProjectFile } from '@/types'
+import { translate } from '@/i18n/translate'
 import { createInitialOption } from './dataset'
 import { validateProjectFile } from './optionValidator'
 
 export function createDefaultProject(): ChartProjectFile {
   return {
     formatVersion: 1,
-    meta: { name: '未命名图表', updatedAt: new Date().toISOString() },
+    meta: { name: translate('runtime.unnamedChart'), updatedAt: new Date().toISOString() },
     option: createInitialOption(),
   }
 }

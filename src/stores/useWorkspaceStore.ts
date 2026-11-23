@@ -6,6 +6,11 @@ import type {
   SeriesGroupConfig,
   TableData,
 } from '@/types'
+import { currentLocale, setI18nLocale } from '@/i18n'
+import { notifyElectronLocale } from '@/i18n/electron'
+import { persistLocale } from '@/i18n/language'
+import { translate } from '@/i18n/translate'
+import type { Locale } from '@/i18n/types'
 import { applyTableToOption } from '@/utils/dataset'
 import { createDefaultProject } from '@/utils/configFile'
 import { logError } from '@/utils/logger'
@@ -27,6 +32,7 @@ interface UiState {
   errorMessage: string
   isImporting: boolean
   theme: 'light' | 'dark'
+  locale: Locale
   dataPreviewOpen: boolean
 }
 
@@ -54,6 +60,7 @@ const state = reactive({
     errorMessage: '',
     isImporting: false,
     theme: initialTheme(),
+    locale: currentLocale(),
     dataPreviewOpen: false,
   } as UiState,
 })
@@ -450,7 +457,7 @@ function buildGroupedDataset(groupIndex: number): { source: Array<Array<Serializ
   }
 
   const source: Array<Array<SerializableNode>> = [
-    [table.columns[xField] ?? '类目', ...groups],
+    [table.columns[xField] ?? translate('runtime.categoryFallback'), ...groups],
   ]
   categories.forEach((category, position) => {
     source.push([category, ...groups.map((name) => {
@@ -766,6 +773,13 @@ function resetProject() {
   state.ui.jsonError = ''
 }
 
+function setLocale(locale: Locale) {
+  state.ui.locale = locale
+  setI18nLocale(locale)
+  persistLocale(locale)
+  notifyElectronLocale(locale)
+}
+
 function toggleTheme() {
   const next = state.ui.theme === 'light' ? 'dark' : 'light'
   state.ui.theme = next
@@ -822,6 +836,7 @@ export function useWorkspaceStore() {
     setProject,
     resetProject,
     toggleTheme,
+    setLocale,
     touch,
   }
 }

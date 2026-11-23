@@ -43,6 +43,7 @@
 - 导出 PNG、SVG、PDF 与 JSON 项目文件，支持自定义导出分辨率。
 - 表单、JSON 与渲染使用同一份配置；表单不会伪造 option 中未设置的默认值。
 - 浅色（默认）与深色主题切换；图片导出使用 option 中的 `backgroundColor`（默认白底），不受界面主题影响。
+- 顶栏可按「简体 → 繁體 → EN」切换三种语言；首次启动跟随系统语言，之后记住用户选择。新增语言只需补充语言资源目录。
 - 支持浏览器和 Electron 桌面运行。
 
 ## 为什么选择本项目
@@ -64,6 +65,8 @@
 ```text
 导入文件 -> TableData -> dataset.source -> 运行时 option -> ECharts
 右侧编辑 -> 路径写入 / JSON 草稿 -> option -> 实时预览
+语言状态 -> vue-i18n 资源 -> 界面 / 运行时文案 / 字段标签
+         -> 最小 preload 桥 -> Electron 标题与开发菜单
 ```
 
 ## 开发
@@ -78,7 +81,7 @@ pnpm dist
 pnpm dist:win
 ```
 
-浏览器开发端口为 `1420`；Electron 开发模式使用 `1422`，并通过 `VLE_DEV_URL` 传给主进程。`pnpm dist` 使用 electron-builder 在 `release/` 目录生成安装包；`pnpm dist:win` 一键生成 Windows NSIS 安装包（`*.exe`）。首次打包需要下载 Electron 与 NSIS 资源，脚本默认使用 npmmirror 镜像，也支持通过 `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR` 覆盖。Windows 构建设置了 `signAndEditExecutable: false`，跳过 exe 资源编辑，因此不需要管理员权限或开发者模式来解压 winCodeSign；只有需要自定义图标或代码签名时才应改回。NSIS 安装时可选择安装目录，打包内容只包含构建产物，不含 `node_modules`，并只保留 `en-US` 和 `zh-CN` 两种 Electron 语言包。
+浏览器开发端口为 `1420`；Electron 开发模式使用 `1422`，并通过 `VLE_DEV_URL` 传给主进程。`pnpm dist` 使用 electron-builder 在 `release/` 目录生成安装包；`pnpm dist:win` 一键生成 Windows NSIS 安装包（`*.exe`）。首次打包需要下载 Electron 与 NSIS 资源，脚本默认使用 npmmirror 镜像，也支持通过 `ELECTRON_MIRROR` / `ELECTRON_BUILDER_BINARIES_MIRROR` 覆盖。Windows 构建设置了 `signAndEditExecutable: false`，跳过 exe 资源编辑，因此不需要管理员权限或开发者模式来解压 winCodeSign；只有需要自定义图标或代码签名时才应改回。NSIS 安装时可选择安装目录，打包内容只包含构建产物，不含 `node_modules`，并只保留 `en-US`、`zh-CN` 和 `zh-TW` 三种 Electron 语言包。
 
 ## 配置格式
 
@@ -90,6 +93,7 @@ pnpm dist:win
 - [全属性编辑器](docs/option-editor.md)：表单/JSON 双模式与字段类型说明。
 - [数据绑定](docs/data-binding.md)：支持格式的解析规则、表头行与 `dataset` / `encode` 映射。
 - [架构](docs/architecture.md)：状态模型与运行时数据流。
+- [多语言](docs/i18n.md)：语言资源、切换行为与新增语言步骤。
 - [验收清单](docs/qa-checklist.md)：功能验收与回归项。
 
 示例文件：`examples/sample.csv`、`examples/sample-chart-project.json`。
@@ -98,7 +102,7 @@ pnpm dist:win
 
 - 项目使用全量 ECharts，确保 `dataZoom`、`visualMap`、`toolbox`、`graphic` 等高级组件无需手动注册即可使用。
 - 函数型字段使用模板描述对象表达，不会执行用户输入的脚本。
-- Electron 保持 `nodeIntegration` 关闭、`contextIsolation` 开启。
+- Electron 保持 `nodeIntegration` 关闭、`contextIsolation` 与沙箱开启，仅通过最小 preload 桥同步语言状态。
 
 ## 许可证
 

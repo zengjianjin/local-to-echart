@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Plus, Copy, Trash2, ArrowUp, ArrowDown, GripVertical } from 'lucide-vue-next'
 import type { FieldSchema, SerializableNode } from '@/types'
 import Button from '@/components/ui/Button.vue'
@@ -12,6 +13,7 @@ import { cloneOption } from '@/utils/optionPath'
 const FieldControl = defineAsyncComponent(() => import('./FieldControl.vue'))
 
 const props = defineProps<{ field: FieldSchema; basePath?: string }>()
+const { t } = useI18n()
 const { state } = useWorkspaceStore()
 const { setOptionValueAt } = useWorkspaceStore()
 
@@ -68,9 +70,9 @@ function visibleFields(index: number): FieldSchema[] {
 function itemTitle(item: SerializableNode, index: number): string {
   if (item && typeof item === 'object' && !Array.isArray(item)) {
     const record = item as Record<string, unknown>
-    return String(record.name ?? record.type ?? record.id ?? `第 ${index + 1} 项`)
+    return String(record.name ?? record.type ?? record.id ?? t('settings.itemIndex', { index: index + 1 }))
   }
-  return `第 ${index + 1} 项`
+  return t('settings.itemIndex', { index: index + 1 })
 }
 
 function write(next: SerializableNode[]) {
@@ -111,28 +113,28 @@ function updatePrimitive(index: number, value: string) {
   <div class="space-y-2">
     <div class="flex items-center justify-between">
       <div class="text-[11px] font-medium text-ink-200">{{ field.label }}</div>
-      <Button size="icon" variant="soft" title="新增一项" @click="addItem">
+      <Button size="icon" variant="soft" :title="t('settings.addItem')" @click="addItem">
         <Plus :size="13" />
       </Button>
     </div>
 
     <div v-if="!items.length" class="rounded-lg border border-dashed border-white/10 px-3 py-4 text-center text-[10px] text-ink-500">
-      当前没有配置项，点击右上角新增。
+      {{ t('settings.emptyItems') }}
     </div>
 
     <div v-for="(item, index) in items" :key="`${arrayPath}-${index}`" class="space-y-2">
-      <Collapsible :title="itemTitle(item, index)" :description="`索引 ${index}`" :open="index === 0">
+      <Collapsible :title="itemTitle(item, index)" :description="t('settings.itemDetailIndex', { index })" :open="index === 0">
         <template #actions>
-          <Button size="icon" title="上移" :disabled="index === 0" @click="moveItem(index, -1)">
+          <Button size="icon" :title="t('common.moveUp')" :disabled="index === 0" @click="moveItem(index, -1)">
             <ArrowUp :size="12" />
           </Button>
-          <Button size="icon" title="下移" :disabled="index === items.length - 1" @click="moveItem(index, 1)">
+          <Button size="icon" :title="t('common.moveDown')" :disabled="index === items.length - 1" @click="moveItem(index, 1)">
             <ArrowDown :size="12" />
           </Button>
-          <Button size="icon" title="复制" @click="duplicateItem(index)">
+          <Button size="icon" :title="t('common.copy')" @click="duplicateItem(index)">
             <Copy :size="12" />
           </Button>
-          <Button size="icon" variant="danger" title="删除" @click="removeItem(index)">
+          <Button size="icon" variant="danger" :title="t('common.delete')" @click="removeItem(index)">
             <Trash2 :size="12" />
           </Button>
         </template>

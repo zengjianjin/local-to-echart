@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import * as echarts from 'echarts'
 import { BarChart3 } from 'lucide-vue-next'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 
+const { t } = useI18n()
 const { state, runtimeOption, setChartInstance } = useWorkspaceStore()
 const host = ref<HTMLDivElement | null>(null)
 let chart: echarts.ECharts | null = null
@@ -62,9 +64,9 @@ onBeforeUnmount(() => {
         <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
           <BarChart3 :size="23" />
         </div>
-        <div class="text-[14px] font-semibold text-ink-50">准备生成图表</div>
+        <div class="text-[14px] font-semibold text-ink-50">{{ t('chart.prepareChart') }}</div>
         <p class="mt-2 text-[11px] leading-relaxed text-ink-400">
-          从左侧导入 CSV 或 Excel，数据会写入标准 dataset；随后可在右侧直接编辑完整 ECharts Option。
+          {{ t('chart.emptyChart') }}
         </p>
       </div>
     </div>

@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { SchemaSection } from '@/types'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import FieldControl from './FieldControl.vue'
 
 defineProps<{ section: SchemaSection }>()
+const { t } = useI18n()
 const { state } = useWorkspaceStore()
 </script>
 
@@ -22,7 +24,7 @@ const { state } = useWorkspaceStore()
     </div>
 
     <div v-if="!section.fields.length" class="rounded-lg border border-dashed border-white/10 px-3 py-5 text-center text-[10px] text-ink-500">
-      没有匹配的字段，试试其他关键词或切换到 JSON 模式。
+      {{ t('settings.emptySearch') }}
     </div>
 
     <div :class="state.ui.rightExpanded ? 'grid grid-cols-2 gap-2' : 'space-y-2'">

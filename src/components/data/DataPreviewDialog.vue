@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search, Table2, X } from 'lucide-vue-next'
 import Input from '@/components/ui/Input.vue'
 import Button from '@/components/ui/Button.vue'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { summarizeDatasetSize } from '@/utils/optionClone'
 
+const { t } = useI18n()
 const { state } = useWorkspaceStore()
 const query = ref('')
 const renderLimit = ref(500)
@@ -57,22 +59,22 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             <Table2 :size="16" />
           </div>
           <div class="min-w-0 flex-1">
-            <div class="text-[13px] font-semibold text-ink-50">数据全量预览</div>
+            <div class="text-[13px] font-semibold text-ink-50">{{ t('data.fullPreview') }}</div>
             <div class="truncate text-[10px] text-ink-500">
-              {{ state.table?.name ?? '未导入数据' }} · {{ summarizeDatasetSize(state.table) }}
+              {{ state.table?.name ?? t('data.noData') }} · {{ summarizeDatasetSize(state.table) }}
             </div>
           </div>
           <div class="relative w-[260px]">
             <Search :size="12" class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-500" />
-            <Input v-model="query" class="pl-7" placeholder="搜索任意单元格" />
+            <Input v-model="query" class="pl-7" :placeholder="t('data.searchCells')" />
           </div>
-          <Button size="icon" title="关闭 (Esc)" @click="state.ui.dataPreviewOpen = false">
+          <Button size="icon" :title="t('common.close')" @click="state.ui.dataPreviewOpen = false">
             <X :size="14" />
           </Button>
         </div>
 
         <div v-if="!state.table" class="flex flex-1 items-center justify-center text-[11px] text-ink-500">
-          请先导入表格数据。
+          {{ t('data.emptyPreview') }}
         </div>
 
         <template v-else>
@@ -110,14 +112,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
               </tbody>
             </table>
             <div v-if="visibleRows.length < filteredRows.length" class="px-4 py-3 text-center text-[10px] text-ink-500">
-              继续向下滚动以加载更多（已显示 {{ visibleRows.length }} / {{ filteredRows.length }} 行）
+              {{ t('data.scrollMore', { visible: visibleRows.length, total: filteredRows.length }) }}
             </div>
           </div>
           <div class="flex shrink-0 items-center gap-3 border-t border-white/[0.08] px-4 py-2 text-[10px] text-ink-500">
-            <span>显示 {{ visibleRows.length }} / {{ filteredRows.length }} 行</span>
+            <span>{{ t('data.visibleRows', { visible: visibleRows.length, total: filteredRows.length }) }}</span>
             <span class="h-3 w-px bg-white/10" />
-            <span>{{ columns.length }} 列</span>
-            <span class="ml-auto">Esc 或点击空白处关闭</span>
+            <span>{{ t('data.columnCount', { count: columns.length }) }}</span>
+            <span class="ml-auto">{{ t('common.closeHint') }}</span>
           </div>
         </template>
       </div>

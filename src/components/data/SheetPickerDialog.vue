@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { FileSpreadsheet, X } from 'lucide-vue-next'
 import Button from '@/components/ui/Button.vue'
 import {
@@ -10,6 +11,8 @@ import {
   selectedSheet,
   setHeaderRow,
 } from '@/composables/useFileImport'
+
+const { t } = useI18n()
 
 function onHeaderRowChange(event: Event) {
   setHeaderRow(Number((event.target as HTMLInputElement).value))
@@ -36,12 +39,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             <FileSpreadsheet :size="16" />
           </div>
           <div class="min-w-0 flex-1">
-            <div class="text-[13px] font-semibold text-ink-50">选择 Excel 工作表</div>
+            <div class="text-[13px] font-semibold text-ink-50">{{ t('data.selectSheetTitle') }}</div>
             <div class="truncate text-[10px] text-ink-500" :title="pendingWorkbook.fileName">
-              {{ pendingWorkbook.fileName }} · 共 {{ pendingWorkbook.sheets.length }} 个工作表
+              {{ t('data.sheetCount', { name: pendingWorkbook.fileName, count: pendingWorkbook.sheets.length }) }}
             </div>
           </div>
-          <Button size="icon" title="取消" @click="cancelSheetImport">
+          <Button size="icon" :title="t('common.cancel')" @click="cancelSheetImport">
             <X :size="14" />
           </Button>
         </div>
@@ -67,12 +70,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
               <span v-if="selectedSheet === sheet.name" class="h-1.5 w-1.5 rounded-full bg-pure" />
             </span>
             <span class="min-w-0 flex-1 truncate text-[12px] text-ink-50">{{ sheet.name }}</span>
-            <span class="shrink-0 font-mono text-[10px] text-ink-500">{{ sheet.rowCount }} 行</span>
+            <span class="shrink-0 font-mono text-[10px] text-ink-500">{{ t('data.rowsCount', { count: sheet.rowCount }) }}</span>
           </button>
         </div>
 
         <div class="flex items-center gap-2 border-t border-white/[0.08] px-4 py-2">
-          <span class="shrink-0 text-[10px] text-ink-500">表头行</span>
+          <span class="shrink-0 text-[10px] text-ink-500">{{ t('data.headerRow') }}</span>
           <input
             type="number"
             min="1"
@@ -81,13 +84,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             class="h-6 w-12 rounded border border-white/10 bg-ink-950/60 px-1 text-center text-[11px] text-ink-100 outline-none focus:border-primary/50"
             @change="onHeaderRowChange"
           />
-          <span class="text-[10px] text-ink-500">从该行读取字段名，上方合并行只用于拼接分组名</span>
+          <span class="text-[10px] text-ink-500">{{ t('data.headerRowHintSheet') }}</span>
         </div>
 
         <div class="flex items-center justify-end gap-2 border-t border-white/[0.08] px-4 py-3">
-          <span class="mr-auto text-[10px] text-ink-500">双击工作表可直接载入，Esc 取消</span>
-          <Button size="sm" variant="soft" @click="cancelSheetImport">取消</Button>
-          <Button size="sm" variant="primary" @click="confirmSheetImport">载入工作表</Button>
+          <span class="mr-auto text-[10px] text-ink-500">{{ t('data.sheetHint') }}</span>
+          <Button size="sm" variant="soft" @click="cancelSheetImport">{{ t('common.cancel') }}</Button>
+          <Button size="sm" variant="primary" @click="confirmSheetImport">{{ t('data.loadSheet') }}</Button>
         </div>
       </div>
     </div>
