@@ -17,7 +17,7 @@ import { logError } from '@/utils/logger'
 import { getOptionValue, setOptionValue, unsetOptionValue } from '@/utils/optionPath'
 import { normalizeOption } from '@/utils/optionNormalize'
 import { materializeRuntimeOption } from '@/utils/runtimeOption'
-import { keepNonCartesianSeries } from '@/utils/seriesKind'
+import { isNonCartesianType, keepNonCartesianSeries } from '@/utils/seriesKind'
 
 interface UiState {
   leftCollapsed: boolean
@@ -425,6 +425,65 @@ function rebuildAutoSeries(valueField?: number, preserved?: Record<string, Seria
   syncXFieldYAxes()
 }
 
+function buildFlatSeriesItems(): Array<{ groupIndex: number; valueField: number; preserved: Record<string, SerializableNode> | null }> {
+  const table = state.table
+  if (!table) return []
+  const seen = new Set<number>()
+  const items: Array<{ groupIndex: number; valueField: number; preserved: Record<string, SerializableNode> | null }> = []
+  currentSeriesGroups().forEach((group, groupIndex) => {
+    if (group.nameFields.length) return
+    const valueField = currentSeriesValueField(groupIndex)
+    if (valueField < 0 || valueField >= (table.columns?.length ?? 0) || seen.has(valueField)) return
+    seen.add(valueField)
+    items.push({ groupIndex, valueField, preserved: currentAutoSeriesByField(valueField) })
+  })
+  return items
+}
+
+function currentAutoSeriesByField(valueField: number): Record<string, SerializableNode> | null {
+  const series = getOptionValue(state.project.option, 'series')
+  if (!Array.isArray(series)) return null
+  const found = series.find((item) => isRecord(item) && typeof item.id === 'string' && item.id === `workspace-series-${valueField}`)
+  return found && isRecord(found) ? (found as Record<string, SerializableNode>) : null
+}
+
+function rebuildFlatSeries() {
+  if (!state.table) return
+  const items = buildFlatSeriesItems()
+  if (items.length < 2) return
+  const xField = currentXFields()[0] ?? 0
+  const legacy = currentAutoSeries()
+  state.project.option = normalizeOption(applyTableToOption(state.table, state.project.option, currentXFields()))
+  removeGeneratedSeries()
+  const series = getOptionValue(state.project.option, 'series')
+  const list = Array.isArray(series) ? [...series] : []
+  items.forEach(({ groupIndex, valueField, preserved }) => {
+    const defaults = currentSeriesGroupDefaults(groupIndex)
+    const base = preserved ?? (valueField === (legacy ? seriesYDimension(legacy) : -1) ? legacy : null)
+    const preferredType = typeof base?.type === 'string'
+      ? base.type
+      : (typeof defaults.type === 'string' ? defaults.type : 'bar')
+    const item: Record<string, SerializableNode> = {
+      ...defaults,
+      ...(base ?? {}),
+      type: preferredType,
+      encode: isRecord(base?.encode)
+        ? base.encode
+        : (isNonCartesianType(preferredType)
+            ? { itemName: xField, value: valueField }
+            : { x: xField, y: [valueField] }),
+      xAxisIndex: typeof base?.xAxisIndex === 'number'
+        ? base.xAxisIndex
+        : (typeof defaults.xAxisIndex === 'number' ? defaults.xAxisIndex : 0),
+      id: `workspace-series-${valueField}`,
+      name: state.table?.columns[valueField] ?? `系列 ${valueField}`,
+    }
+    list.push(item)
+  })
+  setOptionValue(state.project.option, 'series', list)
+  syncXFieldYAxes()
+}
+
 function buildGroupedDataset(groupIndex: number): { source: Array<Array<SerializableNode>>; groups: string[] } | null {
   const table = state.table
   if (!table) return null
@@ -505,6 +564,11 @@ function syncSeriesNameFields() {
   ))
   if (!state.table) return
   if (!hasActive) {
+    const flatItems = buildFlatSeriesItems()
+    if (flatItems.length >= 2) {
+      rebuildFlatSeries()
+      return
+    }
     const valueField = currentSeriesValueField(0)
     if (hasGroupedSeries() || valueField >= 0) {
       const preserved = currentAutoSeries()
@@ -684,13 +748,17 @@ function applySeriesBulk(groupIndex: number, patches: Array<{ path: string; valu
   const list = getOptionValue(state.project.option, 'series')
   if (!Array.isArray(list)) return
   const prefix = `workspace-series-group-${groupIndex}-`
-  const isAutoSeries = (item: Record<string, unknown>): boolean =>
-    typeof item.id === 'string' && /^workspace-series-\d+$/.test(item.id)
+  const autoId = (() => {
+    if (currentSeriesNameFields(groupIndex).length) return ''
+    const field = currentSeriesValueField(groupIndex)
+    return field >= 0 ? `workspace-series-${field}` : ''
+  })()
 
   const next = list.map((item) => {
     if (!isRecord(item) || typeof item.id !== 'string') return item
     const isGrouped = item.id.startsWith(prefix)
-    if (!isGrouped && !isAutoSeries(item)) return item
+    const isOwnAuto = Boolean(autoId) && item.id === autoId
+    if (!isGrouped && !isOwnAuto) return item
     const copy = JSON.parse(JSON.stringify(item)) as Record<string, SerializableNode>
     patches.forEach((patch) => setOptionValue(copy, patch.path, patch.value))
     return copy

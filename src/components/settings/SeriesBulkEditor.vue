@@ -26,7 +26,7 @@ interface BulkSection {
 
 const props = defineProps<{ groupIndex: number }>()
 const { t } = useI18n()
-const { state, applySeriesBulk } = useWorkspaceStore()
+const { state, applySeriesBulk, currentSeriesNameFields, currentSeriesValueField } = useWorkspaceStore()
 
 const values = reactive<Record<string, string>>({})
 const expanded = ref(false)
@@ -35,9 +35,18 @@ const seriesCount = computed(() => {
   const series = getOptionValue(state.project.option, 'series')
   if (!Array.isArray(series)) return 0
   const prefix = `workspace-series-group-${props.groupIndex}-`
-  return series.filter((item) => Boolean(item) && typeof item === 'object' && !Array.isArray(item)
-    && typeof (item as Record<string, unknown>).id === 'string'
-    && String((item as Record<string, unknown>).id).startsWith(prefix)).length
+  const autoId = currentSeriesNameFields(props.groupIndex).length
+    ? ''
+    : (() => {
+        const field = currentSeriesValueField(props.groupIndex)
+        return field >= 0 ? `workspace-series-${field}` : ''
+      })()
+  return series.filter((item) => {
+    if (!Boolean(item) || typeof item !== 'object' || Array.isArray(item)) return false
+    const id = (item as Record<string, unknown>).id
+    if (typeof id !== 'string') return false
+    return id.startsWith(prefix) || (Boolean(autoId) && id === autoId)
+  }).length
 })
 
 function withNone(options: Array<{ label: string; value: string | number | boolean }>) {
