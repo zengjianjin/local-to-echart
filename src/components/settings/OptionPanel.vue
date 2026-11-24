@@ -87,7 +87,7 @@ watch(sections, (value) => {
             :options="[{ label: t('settings.formMode'), value: 'form' }, { label: t('settings.jsonMode'), value: 'json' }]"
             @update:model-value="state.ui.editorMode = $event as 'form' | 'json'"
           />
-          <Button size="icon" :title="t('common.restoreDefault')" @click="resetAll">
+          <Button size="icon" :title="t('common.resetChartSettings')" @click="resetAll">
             <RotateCcw :size="12" />
           </Button>
         </div>

@@ -5,6 +5,7 @@ export default {
   close: '關閉 (Esc)',
   closeHint: 'Esc 或點擊空白處關閉',
   restoreDefault: '恢復預設',
+  resetChartSettings: '重置圖表設定（保留資料）',
   reset: '重置',
   confirm: '確定',
   save: '儲存欄位',

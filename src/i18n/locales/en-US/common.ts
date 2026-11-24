@@ -5,6 +5,7 @@ export default {
   close: 'Close (Esc)',
   closeHint: 'Press Esc or click outside to close',
   restoreDefault: 'Restore default',
+  resetChartSettings: 'Reset chart settings (keep data)',
   reset: 'Reset',
   confirm: 'Confirm',
   save: 'Save field',

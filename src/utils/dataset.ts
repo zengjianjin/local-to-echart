@@ -1,7 +1,7 @@
-import type { SerializableEchartsOption, TableData } from '@/types'
+import type { SerializableEchartsOption, SerializableNode, TableData } from '@/types'
 import { translate } from '@/i18n/translate'
 import { cloneSerializableOption } from './optionClone'
-import { keepNonCartesianSeries } from './seriesKind'
+import { isNonCartesianType, keepNonCartesianSeries } from './seriesKind'
 
 export function createInitialOption(): SerializableEchartsOption {
   return {
@@ -28,6 +28,7 @@ export function applyTableToOption(
   option: SerializableEchartsOption,
   xFields: number[] = [0],
   preferredValueField?: number,
+  preservedAutoSeries?: Record<string, SerializableNode> | null,
 ): SerializableEchartsOption {
   const next = cloneSerializableOption(option)
   const source = tableToSource(table)
@@ -41,6 +42,9 @@ export function applyTableToOption(
   next.dataset = datasets
 
   const oldSeries = Array.isArray(next.series) ? next.series : []
+  const autoSeriesOld = (preservedAutoSeries ?? oldSeries.find(
+    (item) => Boolean(item) && typeof item === 'object' && String((item as Record<string, unknown>).id ?? '').startsWith('workspace-series-'),
+  )) as Record<string, SerializableNode> | undefined
   const customSeries = oldSeries.filter(
     (item) => !(Boolean(item) && typeof item === 'object' && String((item as Record<string, unknown>).id ?? '').startsWith('workspace-series')),
   )
@@ -64,13 +68,16 @@ export function applyTableToOption(
     ? preferredValueField
     : (finalValueIndexes[0] ?? (table.columns.length > 1 ? 1 : -1))
 
-  const autoSeries = valueIndex >= 0
+  const autoSeries: Array<Record<string, SerializableNode>> = valueIndex >= 0
     ? [{
+        ...(autoSeriesOld ?? {}),
         id: `workspace-series-${valueIndex}`,
         name: table.columns[valueIndex],
-        type: 'bar',
+        type: typeof autoSeriesOld?.type === 'string' ? autoSeriesOld.type : 'bar',
         xAxisIndex: 0,
-        encode: { x: xIndex, y: [valueIndex] },
+        encode: isNonCartesianType(autoSeriesOld?.type)
+          ? (autoSeriesOld?.encode as Record<string, SerializableNode> | undefined ?? { itemName: xIndex, value: valueIndex })
+          : { x: xIndex, y: [valueIndex] },
       }]
     : []
   next.series = [...customSeries, ...autoSeries]

@@ -5,7 +5,7 @@ import type { SerializableNode } from '@/types'
 import { logError } from '@/utils/logger'
 import { stringifyOption, parseOptionJson } from '@/utils/optionValidator'
 
-const { state, replaceOption, setOptionValueAt, removeOptionValueAt, resetProject } = useWorkspaceStore()
+const { state, replaceOption, setOptionValueAt, removeOptionValueAt, resetChartOption } = useWorkspaceStore()
 
 const jsonDraft = ref(stringifyOption(state.project.option))
 const jsonError = ref('')
@@ -68,7 +68,7 @@ function removePath(path: string) {
 }
 
 function resetAll() {
-  resetProject()
+  resetChartOption()
   syncDraft()
 }
 

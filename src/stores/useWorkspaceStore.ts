@@ -401,9 +401,27 @@ function removeGeneratedSeries() {
   }
 }
 
-function rebuildAutoSeries(valueField?: number) {
+function currentAutoSeries(): Record<string, SerializableNode> | null {
+  const series = getOptionValue(state.project.option, 'series')
+  if (!Array.isArray(series)) return null
+  const found = series.find((item) => isRecord(item) && typeof item.id === 'string' && item.id.startsWith('workspace-series-'))
+  return found && isRecord(found) ? (found as Record<string, SerializableNode>) : null
+}
+
+function rebuildAutoSeries(valueField?: number, preserved?: Record<string, SerializableNode> | null) {
   if (!state.table) return
-  state.project.option = normalizeOption(applyTableToOption(state.table, state.project.option, currentXFields(), valueField))
+  state.project.option = normalizeOption(applyTableToOption(state.table, state.project.option, currentXFields(), valueField, preserved))
+  const series = getOptionValue(state.project.option, 'series')
+  if (Array.isArray(series)) {
+    const autoIndex = series.findIndex((item) => isRecord(item) && typeof item.id === 'string' && /^workspace-series-\d+$/.test(item.id))
+    if (autoIndex >= 0 && isRecord(series[autoIndex])) {
+      setOptionValue(
+        state.project.option,
+        `series[${autoIndex}]`,
+        { ...(series[autoIndex] as Record<string, SerializableNode>), ...currentSeriesGroupDefaults(0) },
+      )
+    }
+  }
   syncXFieldYAxes()
 }
 
@@ -489,8 +507,9 @@ function syncSeriesNameFields() {
   if (!hasActive) {
     const valueField = currentSeriesValueField(0)
     if (hasGroupedSeries() || valueField >= 0) {
+      const preserved = currentAutoSeries()
       removeGeneratedSeries()
-      rebuildAutoSeries(valueField >= 0 ? valueField : undefined)
+      rebuildAutoSeries(valueField >= 0 ? valueField : undefined, preserved)
     }
     return
   }
@@ -665,9 +684,13 @@ function applySeriesBulk(groupIndex: number, patches: Array<{ path: string; valu
   const list = getOptionValue(state.project.option, 'series')
   if (!Array.isArray(list)) return
   const prefix = `workspace-series-group-${groupIndex}-`
+  const isAutoSeries = (item: Record<string, unknown>): boolean =>
+    typeof item.id === 'string' && /^workspace-series-\d+$/.test(item.id)
 
   const next = list.map((item) => {
-    if (!isRecord(item) || typeof item.id !== 'string' || !item.id.startsWith(prefix)) return item
+    if (!isRecord(item) || typeof item.id !== 'string') return item
+    const isGrouped = item.id.startsWith(prefix)
+    if (!isGrouped && !isAutoSeries(item)) return item
     const copy = JSON.parse(JSON.stringify(item)) as Record<string, SerializableNode>
     patches.forEach((patch) => setOptionValue(copy, patch.path, patch.value))
     return copy
@@ -766,6 +789,16 @@ function setProject(project: ChartProjectFile) {
   scheduleSeriesSync()
 }
 
+function resetChartOption() {
+  const table = state.table
+  const name = state.project.meta.name
+  state.project = createDefaultProject()
+  state.ui.jsonDraft = ''
+  state.ui.jsonError = ''
+  if (table) applyTable(table)
+  state.project.meta.name = name
+}
+
 function resetProject() {
   state.project = createDefaultProject()
   state.table = null
@@ -834,6 +867,7 @@ export function useWorkspaceStore() {
     replaceOption,
     applyTable,
     setProject,
+    resetChartOption,
     resetProject,
     toggleTheme,
     setLocale,
