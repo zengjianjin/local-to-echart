@@ -1,6 +1,10 @@
 # Local to ECharts Studio
 
-**[Live demo](https://zengjianjin.github.io/local-to-echart/)** · [中文版](README.zh-CN.md) · [MIT License](LICENSE)
+[![Release](https://img.shields.io/github/v/release/zengjianjin/local-to-echart?display_name=tag)](https://github.com/zengjianjin/local-to-echart/releases)
+[![Deploy demo to GitHub Pages](https://github.com/zengjianjin/local-to-echart/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/zengjianjin/local-to-echart/actions/workflows/deploy-pages.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+**[Download](https://github.com/zengjianjin/local-to-echart/releases)** · [Live demo](https://zengjianjin.github.io/local-to-echart/) · [中文版](README.zh-CN.md) · [MIT License](LICENSE)
 
 > **Local-first ECharts Studio — your data never leaves your machine, and what you export is a standard, reusable ECharts option.**
 >
@@ -25,6 +29,13 @@
 ![Dark theme](docs/screenshots/dark.png)
 
 A local-first workbench for turning tabular data into ECharts charts. The right panel is a full option inspector: schema-driven visual forms for everyday editing plus a JSON editor for every ECharts field, including unknown and future fields.
+
+## Quick start
+
+1. Open the [live demo](https://zengjianjin.github.io/local-to-echart/), or download a Windows / macOS / Linux installer from [Releases](https://github.com/zengjianjin/local-to-echart/releases).
+2. Drop in a CSV / Excel file, or paste table content directly with `Ctrl+V` — the format is detected automatically.
+3. The chart renders live in the middle panel; tune field mappings and styles on the right, or switch to JSON mode to edit any ECharts field.
+4. Export PNG / SVG / PDF, or save a JSON project file — the option can be pasted straight into your own code.
 
 ## Features
 

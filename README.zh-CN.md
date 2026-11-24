@@ -1,6 +1,10 @@
 # Local to ECharts Studio
 
-**[在线 Demo](https://zengjianjin.github.io/local-to-echart/)** · [English](README.md) · [MIT 许可证](LICENSE)
+[![Release](https://img.shields.io/github/v/release/zengjianjin/local-to-echart?display_name=tag)](https://github.com/zengjianjin/local-to-echart/releases)
+[![Deploy demo to GitHub Pages](https://github.com/zengjianjin/local-to-echart/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/zengjianjin/local-to-echart/actions/workflows/deploy-pages.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+**[下载安装包](https://github.com/zengjianjin/local-to-echart/releases)** · [在线 Demo](https://zengjianjin.github.io/local-to-echart/) · [English](README.md) · [MIT 许可证](LICENSE)
 
 > **本地优先的 ECharts Studio——数据不出本机，导出的是可直接复用的标准 ECharts option。**
 >
@@ -25,6 +29,13 @@
 ![深色主题](docs/screenshots/dark.png)
 
 一个本地优先的数据到图表工作台。左侧导入并预览表格数据，中间实时渲染 ECharts 图表，右侧提供完整的属性检查器：默认使用 schema 驱动的可视化表单，也可切换到 JSON 直接编辑任意 ECharts 字段。
+
+## 快速上手
+
+1. 直接打开[在线 Demo](https://zengjianjin.github.io/local-to-echart/)，或从 [Releases](https://github.com/zengjianjin/local-to-echart/releases) 下载 Windows / macOS / Linux 安装包。
+2. 拖入 CSV / Excel 文件，或直接 `Ctrl+V` 粘贴表格内容，格式自动识别。
+3. 中间面板实时出图；右侧调整字段映射与样式，或切换 JSON 模式编辑任意 ECharts 字段。
+4. 导出 PNG / SVG / PDF，或保存为 JSON 项目文件——option 可以直接贴进你自己的代码。
 
 ## 核心能力
 
